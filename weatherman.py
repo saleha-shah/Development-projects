@@ -63,7 +63,6 @@ class WeatherCalculations:
             if reading.date.year == year:
                 filtered_readings.append(reading)
         if not filtered_readings:
-            print("This runs")
             return None
 
         max_temp_reading = max(filtered_readings, key=max_temp)
@@ -168,8 +167,8 @@ class WeatherReports:
                 sign = "-"
 
             chart += f"{str(day).zfill(2)} "
-            chart += "\033[91m+\033[0m" * int(highest_temp)
-            chart += f"\033[96m{sign}\033[0m" * abs(int(lowest_temp))
+            chart += "\033[91m+\033[0m" * int(highest_temp) 
+            chart += f"\033[96m{sign}\033[0m" * abs(int(lowest_temp)) 
             chart += f" {int(highest_temp)}C - {int(lowest_temp)}C\n"
         return chart
 
