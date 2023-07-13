@@ -5,26 +5,31 @@ class WeatherDataParser:
     def __init__(self, file_paths):
         self.file_paths = file_paths
 
+    @staticmethod
+    def clean_value(value):
+        return float(value) if value != '' else None
+
     def parse_weather_data(self):
         readings = []
         for file_path in self.file_paths:
-            if file_path == 'weatherfiles/.DS_Store':
-                continue
             with open(file_path, 'r') as file:
-                lines = file.readlines()
-                for line in lines[1:]:
-                    line = line.strip().split(',')
-                    date = line[0]
-                    MaxTemperature = float(line[1]) if line[1] != '' else None
-                    MinTemperature = float(line[2]) if line[2] != '' else None
-                    MaxHumidity = float(line[3]) if line[3] != '' else None
-                    MeanHumidity = float(line[4]) if line[4] != '' else None
+                weather_entries = file.readlines()
+                for entry in weather_entries[1:]:
+                    entry = entry.strip().split(',')
+                    date = entry[0]
+                    
+                    # Clean the values using the utility method
+                    max_temp = self.clean_value(entry[1])
+                    min_temp = self.clean_value(entry[3])
+                    max_humidity = self.clean_value(entry[7])
+                    mean_humidity = self.clean_value(entry[8])
+
                     reading = WeatherReading(
                         date,
-                        MaxTemperature,
-                        MinTemperature,
-                        MaxHumidity,
-                        MeanHumidity
+                        max_temp,
+                        min_temp,
+                        max_humidity,
+                        mean_humidity
                     )
                     readings.append(reading)
         return readings
