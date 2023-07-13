@@ -10,6 +10,7 @@ class WeatherCalculations:
                                if r.min_temp is not None else float('inf'))
         max_humid_reading = max(self.readings, key=lambda r: r.max_humid
                                 if r.max_humid is not None else float('-inf'))
+
         return {
             'highest_temp': max_temp_reading.max_temp,
             'highest_temp_date': max_temp_reading.date.strftime('%B %d'),
@@ -26,9 +27,11 @@ class WeatherCalculations:
                     if reading.min_temp is not None]
         humidity = [reading.mean_humidity for reading
                     in self.readings if reading.mean_humidity is not None]
+
         highest_avg = sum(maxtemps) / len(maxtemps)
         lowest_avg = sum(mintemps) / len(mintemps)
         humidity_avg = sum(humidity) / len(humidity)
+
         return {
             'highest_avg': highest_avg,
             'lowest_avg': lowest_avg,
