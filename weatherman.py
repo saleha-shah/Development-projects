@@ -1,75 +1,92 @@
+import argparse
+import calendar
 import os
-import sys
+
 from weather_calculations import WeatherCalculations
 from weather_data_parser import WeatherDataParser
 from weather_report import WeatherReport
 
 
 def main():
-    folder_path = sys.argv[1]
-    # Get all the file paths within the folder
-    file_paths = []
-    for file_name in os.listdir(folder_path):
-        file_paths.append(os.path.join(folder_path, file_name))
-    # Parse the weather data from the files
-    parser = WeatherDataParser(file_paths)
-    readings = parser.parse_weather_data()
+    parser = argparse.ArgumentParser(description='Weatherman')
+    parser.add_argument('folder_path', type=str)
+    parser.add_argument('-c', '--chart', type=str, help='Generate monthly chart')
+    parser.add_argument('-a', '--average', type=str, help='Generate monthly average report')
+    parser.add_argument('-e', '--extremes', type=int, help='Generate yearly extremes report')
+    args = parser.parse_args()
 
-    if len(sys.argv) < 4:
-        print("Please provide a valid command.")
-        return
-    commands = sys.argv[2:]
-    for index in range(0, len(commands), 2):
-        flag = commands[index]
-        year_month = commands[index+1]
+    folder_path = args.folder_path
 
-        if flag == '-c':
-            year, month = map(int, year_month.split('/'))
+    if args.chart:
+        file_paths = []
+        year, month = map(int, args.chart.split('/'))
+        file_name = f'Murree_weather_{year}_{calendar.month_abbr[month]}.txt'
+        file_path = os.path.join(folder_path, file_name)
+        if os.path.exists(file_path):
+            file_paths.append(file_path)
+        print(file_paths)
 
-            # Calculate the daily extremes
-            calculator = WeatherCalculations(readings)
-            daily_extremes = calculator.calculate_daily_extremes(year, month)
+        # Parse the weather data from the files
+        parser = WeatherDataParser(file_paths)
+        readings = parser.parse_weather_data()
 
-            # Generate the monthly chart
-            create_report = WeatherReport(daily_extremes)
-            monthly_chart = create_report.generate_monthly_chart(year, month)
+        # Calculate the daily extremes
+        weather_calculation = WeatherCalculations(readings)
+        daily_extremes = weather_calculation.calculate_daily_extremes()
 
-            # Print the monthly chart
-            print(monthly_chart)
-            print()
+        # Generate the monthly chart
+        report = WeatherReport(daily_extremes)
+        monthly_chart = report.generate_monthly_chart(year, month)
 
-        elif flag == '-a':
-            year, month = map(int, year_month.split('/'))
+        # Print the monthly chart
+        print(monthly_chart, end='\n\n')
 
-            # Calculate the monthly averages
-            calculator = WeatherCalculations(readings)
-            averages = calculator.calculate_monthly_means(year, month)
+    if args.average:
+        file_paths = []
+        year, month = map(int, args.average.split('/'))
+        file_name = f'Murree_weather_{year}_{calendar.month_abbr[month]}.txt'
+        file_path = os.path.join(folder_path, file_name)
+        if os.path.exists(file_path):
+            file_paths.append(file_path)
 
-            # Generate the monthly report
-            report_generator = WeatherReport(averages)
-            monthly_report = report_generator.generate_monthly_report()
+        # Parse the weather data from the files
+        parser = WeatherDataParser(file_paths)
+        readings = parser.parse_weather_data()
 
-            # Print the monthly report
-            print(monthly_report)
-            print()
+        # Calculate the monthly averages
+        weather_calculation = WeatherCalculations(readings)
+        averages = weather_calculation.calculate_monthly_means()
+        # Generate the monthly report
+        report = WeatherReport(averages)
+        monthly_report = report.generate_monthly_report(year, month)
 
-        elif flag == '-e':
-            year = int(year_month)
+        # Print the monthly report
+        print(monthly_report, end='\n\n')
 
-            # Calculate the yearly extremes
-            calculator = WeatherCalculations(readings)
-            extremes = calculator.calculate_yearly_extremes(year)
+    if args.extremes:
+        file_paths = []
+        year = args.extremes
+        file_names = [f'Murree_weather_{year}_{month}.txt'
+                      for month in calendar.month_abbr[1:]]
+        for file in file_names:
+            path = os.path.join(folder_path, file)
+            if os.path.exists(path):
+                file_paths.append(path)
 
-            # Generate the yearly report
-            report_generator = WeatherReport(extremes)
-            yearly_report = report_generator.generate_yearly_report()
+        # Parse the weather data from the files
+        parser = WeatherDataParser(file_paths)
+        readings = parser.parse_weather_data()
 
-            # Print the yearly report
-            print(yearly_report)
-            print()
+        # Calculate the yearly extremes
+        weather_calculation = WeatherCalculations(readings)
+        extremes = weather_calculation.calculate_yearly_extremes()
 
-        else:
-            print(f"Invalid flag: {flag}")
+        # Generate the yearly report
+        report = WeatherReport(extremes)
+        yearly_report = report.generate_yearly_report()
+
+        # Print the yearly report
+        print(yearly_report, end='\n\n')
 
 
 if __name__ == '__main__':
