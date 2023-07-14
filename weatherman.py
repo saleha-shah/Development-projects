@@ -49,7 +49,6 @@ def main():
     args = parser.parse_args()
 
     folder_path = args.folder_path
-    print(args)
 
     if args.chart:
         year, month = map(int, args.chart.split('/'))
