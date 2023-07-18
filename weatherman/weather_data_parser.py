@@ -1,3 +1,5 @@
+import csv
+
 from weather_reading import WeatherReading
 
 
@@ -13,15 +15,18 @@ class WeatherDataParser:
         readings = []
         for file_path in self.file_paths:
             with open(file_path, 'r') as file:
-                weather_entries = file.readlines()
-                for entry in weather_entries[1:]:
-                    entry = entry.strip().split(',')
-                    date = entry[0]
+                reader = csv.DictReader(file)
 
-                    max_temp = self.clean_value(entry[1])
-                    min_temp = self.clean_value(entry[3])
-                    max_humidity = self.clean_value(entry[7])
-                    mean_humidity = self.clean_value(entry[8])
+                column_names = reader.fieldnames
+                column_names[0] = 'date'
+
+                for row in reader:
+                    date = row['date']
+
+                    max_temp = self.clean_value(row['Max TemperatureC'])
+                    min_temp = self.clean_value(row['Min TemperatureC'])
+                    max_humidity = self.clean_value(row['Max Humidity'])
+                    mean_humidity = self.clean_value(row[' Mean Humidity'])
 
                     reading = WeatherReading(
                         date,
