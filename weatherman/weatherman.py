@@ -1,6 +1,7 @@
 import argparse
 import calendar
 import os
+from datetime import datetime
 
 from weather_calculations import WeatherCalculations
 from weather_data_parser import WeatherDataParser
@@ -31,18 +32,26 @@ def parse_weather_data(file_paths):
     return weather_data
 
 
+def parse_date_argument(date_str):
+    try:
+        date = datetime.strptime(date_str, '%Y/%m')
+        return date.year, date.month
+    except ValueError:
+        raise argparse.ArgumentTypeError('Invalid date format. Please use YYYY/MM.')
+
+
 def main():
     parser = argparse.ArgumentParser(description='Weatherman')
     parser.add_argument('folder_path', type=str)
-    parser.add_argument('-c', '--chart', type=str, help='Generate monthly chart')
-    parser.add_argument('-a', '--average', type=str, help='Generate monthly average report')
+    parser.add_argument('-c', '--chart', type=parse_date_argument, help='Generate monthly chart')
+    parser.add_argument('-a', '--average', type=parse_date_argument, help='Generate monthly report')
     parser.add_argument('-e', '--extremes', type=int, help='Generate yearly extremes report')
     args = parser.parse_args()
 
     folder_path = args.folder_path
 
     if args.chart:
-        year, month = map(int, args.chart.split('/'))
+        year, month = args.chart
         file_paths = get_file_paths(folder_path, year, month)
 
         weather_data = parse_weather_data(file_paths)
@@ -53,7 +62,7 @@ def main():
         print(monthly_chart, end='\n\n')
 
     if args.average:
-        year, month = map(int, args.average.split('/'))
+        year, month = args.average
         file_paths = get_file_paths(folder_path, year, month)
 
         weather_data = parse_weather_data(file_paths)
