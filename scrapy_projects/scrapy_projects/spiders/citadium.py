@@ -30,16 +30,19 @@ class CitadiumSpider(Spider):
         item = ScrapyProjectsItem()
         item["brand"] = response.css("p.align-items-center::text").get().strip()
         item["category"] = response.css('div.product-infos-text-seo span a::text').getall()
-        item["currency"] = response.css("script[type='application/ld+json']::text").re_first(r'"priceCurrency":"(\w+)"')
-        item["description"] = [text.strip().replace('-', '') for text in response.css("div.op-tab-0.op-text-description::text").getall() if text.strip()]
-        item["gender"] = response.css("div#ariane li:nth-child(2) span[itemprop='name']::text").get()
+        item["currency"] = response.css("script::text").re_first(r'"priceCurrency":"(\w+)"')
+        item["description"] = [text.strip().replace('-', '')
+                               for text in response.css("div.op-tab-0::text").getall() 
+                               if text.strip()]
+        item["gender"] = response.css("div#ariane li:nth-child(2) span::text").get()
         item["image_urls"] = response.css(".w-100.lzy_img.d-none::attr(src)").getall()
         item["lang"] = response.css("html::attr(lang)").get().split("-")[0]
         item["market"] = response.css("html::attr(lang)").get().split("-")[1]
         item["name"] = response.css("h1.fs-18.mb-3.d-flex.flex-column::text")[1].getall()[0].strip()
-        item["price"] = response.css("p.text_style-11.fs-18 span::text").get().split("\xa0")[0].replace(",", ".")
+        item["price"] = response.css("p.text_style-11 span::text").get().split("\xa0")[0].replace(",", ".")
         item["retailer_sku"] = response.css("link[rel='canonical']::attr(href)").get().split("-")[-1]
-        item["trail"] = [[element.css('span::text').get().strip(), element.css('a::attr(href)').get()] if element.css('a') else element.css('span::text').get().strip() 
+        item["trail"] = [[element.css('span::text').get().strip(), element.css('a::attr(href)').get()] 
+                         if element.css('a') else element.css('span::text').get().strip() 
                          for element in response.css('.block-breadcrum [itemprop="itemListElement"]')]
         item["url"] = response.css("link[rel='canonical']::attr(href)").get()
         yield item
