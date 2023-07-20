@@ -1,6 +1,7 @@
 from scrapy import Spider
 from scrapy.spiders import Rule
 from scrapy.linkextractors import LinkExtractor
+import json
 
 from scrapy_projects.items import ScrapyProjectsItem
 
@@ -46,6 +47,7 @@ class CitadiumSpider(Spider):
         item["name"] = self.extract_product_name(response)
         item["price"] = self.extract_product_price(response)
         item["retailer_sku"] = self.extract_product_retailer_sku(response)
+        item["skus"] = self.extract_product_skus(response)
         item["trail"] = trail
         item["url"] = self.extract_product_url(response)
 
@@ -91,6 +93,30 @@ class CitadiumSpider(Spider):
 
     def extract_product_retailer_sku(self, response):
         return response.css("link[rel='canonical']::attr(href)").get().split("-")[-1]
+
+    def extract_product_skus(self, response):
+
+        script_content = response.css("script[type='application/ld+json']::text").get()
+        json_data = json.loads(script_content)
+
+        skus = {}
+        for offer in json_data.get('offers', []):
+            sku = offer.get('sku')
+            colour = offer.get('colour')
+            currency = offer.get('priceCurrency')
+            price = offer.get('price')
+            size = offer.get('size')
+
+            if sku:
+                sku_info = {
+                    'colour': colour,
+                    'currency': currency,
+                    'price': price,
+                    'size': size,
+                }
+                skus[sku] = sku_info
+
+        return skus
 
     def extract_product_url(self, response):
         return response.css("link[rel='canonical']::attr(href)").get()

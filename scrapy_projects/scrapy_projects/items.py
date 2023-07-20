@@ -18,5 +18,6 @@ class ScrapyProjectsItem(scrapy.Item):
     name = scrapy.Field()
     price = scrapy.Field()
     retailer_sku = scrapy.Field()
+    skus = scrapy.Field()
     trail = scrapy.Field()
     url = scrapy.Field()
