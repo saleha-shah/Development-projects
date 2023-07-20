@@ -100,19 +100,19 @@ class CitadiumSpider(Spider):
         json_data = json.loads(script_content)
 
         skus = {}
-        for offer in json_data.get('offers', []):
-            sku = offer.get('sku')
-            colour = offer.get('colour')
-            currency = offer.get('priceCurrency')
-            price = offer.get('price')
-            size = offer.get('size')
+        for offer in json_data.get("offers", []):
+            sku = offer.get("sku")
+            colour = offer.get("colour")
+            currency = offer.get("priceCurrency")
+            price = offer.get("price")
+            size = offer.get("size")
 
             if sku:
                 sku_info = {
-                    'colour': colour,
-                    'currency': currency,
-                    'price': price,
-                    'size': size,
+                    "colour": colour,
+                    "currency": currency,
+                    "price": price,
+                    "size": size,
                 }
                 skus[sku] = sku_info
 
