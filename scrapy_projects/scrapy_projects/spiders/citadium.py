@@ -8,7 +8,8 @@ from scrapy_projects.items import ScrapyProjectsItem
 class CitadiumSpider(Spider):
     name = "citadium"
     allowed_domains = ["www.citadium.com"]
-    start_urls = ["https://www.citadium.com/fr/fr/femme"]
+    start_urls = ["https://www.citadium.com/fr/fr/femme",
+                  "https://www.citadium.com/fr/fr/homme"]
     rules = (
         Rule(LinkExtractor(allow="page/", deny="tag/"), callback="parse_product_links", follow=True)
     )
