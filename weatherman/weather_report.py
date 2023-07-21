@@ -10,6 +10,10 @@ class WeatherReport:
     def __init__(self, results):
         self.results = results
 
+    @staticmethod
+    def get_sign(value):
+        return '+' if value >= 0 else '-'
+
     def generate_yearly_extremes(self):
         if not self.results:
             return 'No data available.'
@@ -46,13 +50,10 @@ class WeatherReport:
         for day, extremes in self.results.items():
             highest_temp = extremes['highest_temp']
             lowest_temp = extremes['lowest_temp']
-            if lowest_temp >= 0:
-                sign = '+'
-            else:
-                sign = '-'
 
             chart += (f'{str(day).zfill(2)} '
-                      f'{RED + "+" * int(highest_temp)}'
-                      f'{BLUE + sign * abs(int(lowest_temp))}{DEFAULT}'
+                      f'{RED + self.get_sign(highest_temp) * abs(int(highest_temp))}'
+                      f'{BLUE + self.get_sign(lowest_temp) * abs(int(lowest_temp))}{DEFAULT}'
                       f' {int(highest_temp)}C - {int(lowest_temp)}C\n')
+
         return chart
