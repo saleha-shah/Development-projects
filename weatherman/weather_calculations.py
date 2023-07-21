@@ -44,16 +44,7 @@ class WeatherCalculations:
             day = reading.date.day
 
             if reading.max_temp is not None and reading.min_temp is not None:
-                max_temperature = reading.max_temp
-                min_temperature = reading.min_temp
-
-                if day not in daily_extremes:
-                    daily_extremes[day] = {'highest_temp': float('-inf'),
-                                           'lowest_temp': float('inf')}
-
-                if max_temperature > daily_extremes[day]['highest_temp']:
-                    daily_extremes[day]['highest_temp'] = max_temperature
-                if min_temperature < daily_extremes[day]['lowest_temp']:
-                    daily_extremes[day]['lowest_temp'] = min_temperature
+                daily_extremes[day] = {'highest_temp': reading.max_temp,
+                                       'lowest_temp': reading.min_temp}
 
         return daily_extremes
