@@ -25,10 +25,11 @@ def get_file_paths(folder_path, year, month=None):
     return file_paths
 
 
-def parse_weather_data(file_paths):
+def parse_data(file_paths):
     parser = WeatherDataParser(file_paths)
     readings = parser.parse_weather_data()
     weather_data = WeatherCalculations(readings)
+
     return weather_data
 
 
@@ -54,7 +55,7 @@ def main():
         year, month = args.chart
         file_paths = get_file_paths(folder_path, year, month)
 
-        weather_data = parse_weather_data(file_paths)
+        weather_data = parse_data(file_paths)
         daily_extremes = weather_data.calculate_daily_extremes()
 
         report = WeatherReport(daily_extremes)
@@ -65,7 +66,7 @@ def main():
         year, month = args.average
         file_paths = get_file_paths(folder_path, year, month)
 
-        weather_data = parse_weather_data(file_paths)
+        weather_data = parse_data(file_paths)
         averages = weather_data.calculate_monthly_means()
 
         report = WeatherReport(averages)
@@ -77,7 +78,7 @@ def main():
         year = args.extremes
         file_paths = get_file_paths(folder_path, year)
 
-        weather_data = parse_weather_data(file_paths)
+        weather_data = parse_data(file_paths)
         extremes = weather_data.calculate_yearly_extremes()
 
         report = WeatherReport(extremes)
