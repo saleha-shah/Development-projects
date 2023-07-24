@@ -13,15 +13,15 @@ class CitadiumSpider(CrawlSpider):
     start_urls = ["https://www.citadium.com/fr/fr"]
     css_links = [".change-bg-anim a", "li.container-submenu a.link_style-1", "div.letter-header a"]
     rules = (
-        Rule(LinkExtractor(restrict_css=css_links), follow=True),
+        Rule(LinkExtractor(restrict_css=css_links),
+             process_request="add_trail_and_follow", follow=True),
+
         Rule(LinkExtractor(restrict_css="#view-all-items .position-relative"),
              process_request="add_trail_and_follow", callback="parse_products", follow=False)
     )
 
     def add_trail_and_follow(self, request, response):
-        trail = self.get_updated_trail(response)
-        request.meta.update({"trail": trail})
-
+        request.meta.update({"trail": self.get_updated_trail(response)})
         return request
 
     def parse_products(self, response):
@@ -96,13 +96,12 @@ class CitadiumSpider(CrawlSpider):
             size = offer.get("size")
 
             if sku:
-                sku_info = {
+                skus[sku] = {
                     "colour": colour,
                     "currency": currency,
                     "price": price,
                     "size": size,
                 }
-                skus[sku] = sku_info
 
         return skus
 
