@@ -1,3 +1,4 @@
+import copy
 import json
 
 from scrapy.linkextractors import LinkExtractor
@@ -10,40 +11,20 @@ class CitadiumSpider(CrawlSpider):
     name = "citadium"
     allowed_domains = ["www.citadium.com"]
     start_urls = ["https://www.citadium.com/fr/fr"]
+    css_links = [".change-bg-anim a", "li.container-submenu a.link_style-1", "div.letter-header a"]
     rules = (
-        Rule(LinkExtractor(restrict_css=".change-bg-anim a"), follow=True),
-
-        Rule(LinkExtractor(restrict_css="li.container-submenu a.link_style-1"),
-             process_request="add_trail_and_follow", follow=True),
-
-        Rule(LinkExtractor(restrict_css="div.letter-header a"),
-             process_request="add_trail_and_follow", follow=True),
-
+        Rule(LinkExtractor(restrict_css=css_links), follow=True),
         Rule(LinkExtractor(restrict_css="#view-all-items .position-relative"),
-             callback="parse_products", follow=True)
+             process_request="add_trail_and_follow", callback="parse_products", follow=False)
     )
 
-    def parse(self, response):
-        pass
-
     def add_trail_and_follow(self, request, response):
-        page_name = self.extract_page_name(response)
-        url = response.url
+        trail = self.get_updated_trail(response)
+        request.meta.update({"trail": trail})
 
-        rule = response.meta.get("rule")
-        existing_trail = response.meta.get("trail", [])
-
-        new_trail = [(page_name, url)]
-        request.replace(meta={"trail": new_trail, "rule": rule})
-        existing_trail.append(new_trail)
-        
-        return request.replace(meta={"trail": existing_trail, "rule": rule})
+        return request
 
     def parse_products(self, response):
-        page_name = self.extract_page_name(response)
-        url = response.url
-        existing_trail = response.meta.get("trail", [])
-        final_trail = existing_trail + [(page_name, url)]
 
         item = ScrapyProjectsItem()
         item["brand"] = self.extract_product_brand(response)
@@ -58,7 +39,7 @@ class CitadiumSpider(CrawlSpider):
         item["price"] = self.extract_product_price(response)
         item["retailer_sku"] = self.extract_product_retailer_sku(response)
         item["skus"] = self.extract_product_skus(response)
-        item["trail"] = final_trail
+        item["trail"] = self.get_updated_trail(response)
         item["url"] = self.extract_product_url(response)
 
         yield item
@@ -127,3 +108,12 @@ class CitadiumSpider(CrawlSpider):
 
     def extract_product_url(self, response):
         return response.css("link[rel='canonical']::attr(href)").get()
+
+    def get_updated_trail(self, response):
+        page_name = self.extract_page_name(response)
+        url = response.url
+        trail = copy.deepcopy(response.meta.get("trail", []))
+        trail.append([page_name, url])
+
+        return trail
+
