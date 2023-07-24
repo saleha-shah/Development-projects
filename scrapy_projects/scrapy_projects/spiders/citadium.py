@@ -1,40 +1,50 @@
-from scrapy import Spider
-from scrapy.spiders import Rule
-from scrapy.linkextractors import LinkExtractor
 import json
+
+from scrapy.linkextractors import LinkExtractor
+from scrapy.spiders import Rule, CrawlSpider
 
 from scrapy_projects.items import ScrapyProjectsItem
 
 
-class CitadiumSpider(Spider):
+class CitadiumSpider(CrawlSpider):
     name = "citadium"
     allowed_domains = ["www.citadium.com"]
-    start_urls = ["https://www.citadium.com/fr/fr/femme",
-                  "https://www.citadium.com/fr/fr/homme"]
+    start_urls = ["https://www.citadium.com/fr/fr"]
     rules = (
-        Rule(LinkExtractor(allow="page/", deny="tag/"), callback="parse_product_links", follow=True)
+        Rule(LinkExtractor(restrict_css=".change-bg-anim a"), follow=True),
+
+        Rule(LinkExtractor(restrict_css="li.container-submenu a.link_style-1"),
+             process_request="add_trail_and_follow", follow=True),
+
+        Rule(LinkExtractor(restrict_css="div.letter-header a"),
+             process_request="add_trail_and_follow", follow=True),
+
+        Rule(LinkExtractor(restrict_css="#view-all-items .position-relative"),
+             callback="parse_products", follow=True)
     )
 
     def parse(self, response):
-        url = response.css("li.container-submenu a.link_style-1::attr(href)")[1].get()
+        pass
+
+    def add_trail_and_follow(self, request, response):
         page_name = self.extract_page_name(response)
+        url = response.url
 
-        yield response.follow(url, self.parse_brand_links, cb_kwargs={"trail": [[page_name, url]]})
-        yield from self.parse_product_links(response, [[page_name, url]])
+        rule = response.meta.get("rule")
+        existing_trail = response.meta.get("trail", [])
 
-    def parse_brand_links(self, response, trail):
+        new_trail = [(page_name, url)]
+        request.replace(meta={"trail": new_trail, "rule": rule})
+        existing_trail.append(new_trail)
+        
+        return request.replace(meta={"trail": existing_trail, "rule": rule})
+
+    def parse_products(self, response):
         page_name = self.extract_page_name(response)
-        for brand_url in response.css("div.letter-header a::attr(href)").getall():
-            yield response.follow(brand_url, self.parse_product_links,
-                                  cb_kwargs={"trail": trail + [page_name, brand_url]})
+        url = response.url
+        existing_trail = response.meta.get("trail", [])
+        final_trail = existing_trail + [(page_name, url)]
 
-    def parse_product_links(self, response, trail):
-        page_name = self.extract_page_name(response)
-        for product_url in response.css("#view-all-items .position-relative::attr(href)").getall():
-            yield response.follow(product_url, self.parse_products,
-                                  cb_kwargs={"trail": trail + [page_name, product_url]})
-
-    def parse_products(self, response, trail):
         item = ScrapyProjectsItem()
         item["brand"] = self.extract_product_brand(response)
         item["category"] = self.extract_product_category(response)
@@ -48,16 +58,14 @@ class CitadiumSpider(Spider):
         item["price"] = self.extract_product_price(response)
         item["retailer_sku"] = self.extract_product_retailer_sku(response)
         item["skus"] = self.extract_product_skus(response)
-        item["trail"] = trail
+        item["trail"] = final_trail
         item["url"] = self.extract_product_url(response)
 
         yield item
 
     def extract_page_name(self, response):
         page_names = response.css("div.block-breadcrum span[itemprop='name']::text").getall()
-        if page_names:
-            return page_names[-1].strip()
-        return ""
+        return page_names[-1].strip() if page_names else ""
 
     def extract_product_brand(self, response):
         return response.css("p.align-items-center::text").get().strip()
@@ -95,7 +103,6 @@ class CitadiumSpider(Spider):
         return response.css("link[rel='canonical']::attr(href)").get().split("-")[-1]
 
     def extract_product_skus(self, response):
-
         script_content = response.css("script[type='application/ld+json']::text").get()
         json_data = json.loads(script_content)
 
