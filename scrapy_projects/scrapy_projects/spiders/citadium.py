@@ -1,5 +1,5 @@
-import copy
-import json
+from copy import deepcopy
+from json import loads
 
 from scrapy.linkextractors import LinkExtractor
 from scrapy.spiders import Rule, CrawlSpider
@@ -11,13 +11,20 @@ class CitadiumSpider(CrawlSpider):
     name = "citadium"
     allowed_domains = ["www.citadium.com"]
     start_urls = ["https://www.citadium.com/fr/fr"]
-    css_links = [".change-bg-anim a", "li.container-submenu a.link_style-1", "div.letter-header a"]
+    listings_css = [
+        ".change-bg-anim a",
+        "li.container-submenu a.link_style-1",
+        "div.letter-header a"
+    ]
+    products_css = [
+        "#view-all-items .position-relative"
+    ]
     rules = (
-        Rule(LinkExtractor(restrict_css=css_links),
+        Rule(LinkExtractor(restrict_css=listings_css),
              process_request="add_trail_and_follow", follow=True),
 
-        Rule(LinkExtractor(restrict_css="#view-all-items .position-relative"),
-             process_request="add_trail_and_follow", callback="parse_products", follow=False)
+        Rule(LinkExtractor(restrict_css=products_css),
+             process_request="add_trail_and_follow", callback="parse_products")
     )
 
     def add_trail_and_follow(self, request, response):
@@ -85,7 +92,7 @@ class CitadiumSpider(CrawlSpider):
 
     def extract_product_skus(self, response):
         script_content = response.css("script[type='application/ld+json']::text").get()
-        json_data = json.loads(script_content)
+        json_data = loads(script_content)
 
         skus = {}
         for offer in json_data.get("offers", []):
@@ -111,7 +118,7 @@ class CitadiumSpider(CrawlSpider):
     def get_updated_trail(self, response):
         page_name = self.extract_page_name(response)
         url = response.url
-        trail = copy.deepcopy(response.meta.get("trail", []))
+        trail = deepcopy(response.meta.get("trail", []))
         trail.append([page_name, url])
 
         return trail
