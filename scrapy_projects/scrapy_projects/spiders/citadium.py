@@ -7,32 +7,54 @@ from scrapy.spiders import Rule, CrawlSpider
 from scrapy_projects.items import ScrapyProjectsItem
 
 
-class CitadiumSpider(CrawlSpider):
+class CrawlingSpider(CrawlSpider):
     name = "citadium"
     allowed_domains = ["www.citadium.com"]
     start_urls = ["https://www.citadium.com/fr/fr"]
+
     listings_css = [
         ".change-bg-anim a",
         "li.container-submenu a.link_style-1",
-        "div.letter-header a"
+        "div.letter-header a",
     ]
     products_css = [
-        "#view-all-items .position-relative"
+        "#view-all-items .position-relative",
     ]
+
     rules = (
         Rule(LinkExtractor(restrict_css=listings_css),
              process_request="add_trail_and_follow", follow=True),
-
         Rule(LinkExtractor(restrict_css=products_css),
-             process_request="add_trail_and_follow", callback="parse_products")
+             process_request="add_trail_and_follow", callback="call_parsing_spider"),
     )
+
+    def call_parsing_spider(self, response):
+        parsing_spider = ParsingSpider()
+        for item in parsing_spider.parse_products(response):
+            yield item
 
     def add_trail_and_follow(self, request, response):
         request.meta.update({"trail": self.get_updated_trail(response)})
         return request
 
-    def parse_products(self, response):
+    def extract_page_name(self, response):
+        page_names = response.css("div.block-breadcrum span[itemprop='name']::text").getall()
+        return page_names[-1].strip() if page_names else ""
 
+    def get_updated_trail(self, response):
+        page_name = self.extract_page_name(response)
+        url = response.url
+        trail = deepcopy(response.meta.get("trail", []))
+        trail.append([page_name, url])
+
+        return trail
+
+
+class ParsingSpider(CrawlSpider):
+    allowed_domains = ["www.citadium.com"]
+    name = "citadium_parser"
+
+    def parse_products(self, response):
         item = ScrapyProjectsItem()
         item["brand"] = self.extract_product_brand(response)
         item["category"] = self.extract_product_category(response)
@@ -46,14 +68,10 @@ class CitadiumSpider(CrawlSpider):
         item["price"] = self.extract_product_price(response)
         item["retailer_sku"] = self.extract_product_retailer_sku(response)
         item["skus"] = self.extract_product_skus(response)
-        item["trail"] = self.get_updated_trail(response)
+        item["trail"] = deepcopy(response.meta.get("trail", []))
         item["url"] = self.extract_product_url(response)
 
         yield item
-
-    def extract_page_name(self, response):
-        page_names = response.css("div.block-breadcrum span[itemprop='name']::text").getall()
-        return page_names[-1].strip() if page_names else ""
 
     def extract_product_brand(self, response):
         return response.css("p.align-items-center::text").get().strip()
@@ -114,12 +132,4 @@ class CitadiumSpider(CrawlSpider):
 
     def extract_product_url(self, response):
         return response.css("link[rel='canonical']::attr(href)").get()
-
-    def get_updated_trail(self, response):
-        page_name = self.extract_page_name(response)
-        url = response.url
-        trail = deepcopy(response.meta.get("trail", []))
-        trail.append([page_name, url])
-
-        return trail
 
