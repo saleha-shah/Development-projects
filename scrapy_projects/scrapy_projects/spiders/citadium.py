@@ -1,53 +1,12 @@
 from copy import deepcopy
 from json import loads
+from re import findall
 
 from scrapy.linkextractors import LinkExtractor
 from scrapy.spiders import Rule, CrawlSpider
+from scrapy import Request
 
 from scrapy_projects.items import ScrapyProjectsItem
-
-
-class CrawlingSpider(CrawlSpider):
-    name = "citadium"
-    allowed_domains = ["www.citadium.com"]
-    start_urls = ["https://www.citadium.com/fr/fr"]
-
-    listings_css = [
-        ".change-bg-anim a",
-        "li.container-submenu a.link_style-1",
-        "div.letter-header a",
-    ]
-    products_css = [
-        "#view-all-items .position-relative",
-    ]
-
-    rules = (
-        Rule(LinkExtractor(restrict_css=listings_css),
-             process_request="add_trail_and_follow", follow=True),
-        Rule(LinkExtractor(restrict_css=products_css),
-             process_request="add_trail_and_follow", callback="call_parsing_spider"),
-    )
-
-    def call_parsing_spider(self, response):
-        parsing_spider = ParsingSpider()
-        for item in parsing_spider.parse_products(response):
-            yield item
-
-    def add_trail_and_follow(self, request, response):
-        request.meta.update({"trail": self.get_updated_trail(response)})
-        return request
-
-    def extract_page_name(self, response):
-        page_names = response.css("div.block-breadcrum span[itemprop='name']::text").getall()
-        return page_names[-1].strip() if page_names else ""
-
-    def get_updated_trail(self, response):
-        page_name = self.extract_page_name(response)
-        url = response.url
-        trail = deepcopy(response.meta.get("trail", []))
-        trail.append([page_name, url])
-
-        return trail
 
 
 class ParsingSpider(CrawlSpider):
@@ -55,6 +14,12 @@ class ParsingSpider(CrawlSpider):
     name = "citadium_parser"
 
     def parse_products(self, response):
+        urls = response.css("div.swiper-container-colors li a::attr(href)").getall()
+        for url in urls:
+            yield Request(url=url, callback=self.extract_product_info,
+                          method="GET", meta={"trail": response.meta.get("trail", [])})
+
+    def extract_product_info(self, response):
         item = ScrapyProjectsItem()
         item["brand"] = self.extract_product_brand(response)
         item["category"] = self.extract_product_category(response)
@@ -91,7 +56,9 @@ class ParsingSpider(CrawlSpider):
         return response.css("div#ariane li:nth-child(2) span[itemprop='name']::text").get()
 
     def extract_product_image_urls(self, response):
-        return response.css(".w-100.lzy_img.d-none::attr(src)").getall()
+        script_content = response.css("script[type='application/ld+json']::text").get()
+        json_data = loads(script_content)
+        return json_data.get("image")
 
     def extract_product_language(self, response):
         return response.css("html::attr(lang)").get().split("-")[0]
@@ -109,27 +76,69 @@ class ParsingSpider(CrawlSpider):
         return response.css("link[rel='canonical']::attr(href)").get().split("-")[-1]
 
     def extract_product_skus(self, response):
-        script_content = response.css("script[type='application/ld+json']::text").get()
-        json_data = loads(script_content)
+        html_content = response.text
+        script_content = findall(r"dataLayer\.push\((\{.*?\})\);", html_content)
 
-        skus = {}
-        for offer in json_data.get("offers", []):
-            sku = offer.get("sku")
-            colour = offer.get("colour")
-            currency = offer.get("priceCurrency")
-            price = offer.get("price")
-            size = offer.get("size")
+        if script_content:
+            json_data = loads(script_content[1])
+            skus = {}
+            product = json_data.get("ecommerce", {}).get("detail", {}).get("products", [])[0]
+            variants = product.get("sizes", [])
+            for variant in variants:
+                sku_id = variant.get("refId")
+                price = variant.get("price")
+                size = variant.get("size").replace(",", ".")
+                quantity = False if variant.get("quantity") else True
 
-            if sku:
-                skus[sku] = {
-                    "colour": colour,
-                    "currency": currency,
+                skus[sku_id] = {
+                    "color": response.css("p.active-color::text").get(),
+                    "currency": self.extract_product_currency(response),
                     "price": price,
-                    "size": size,
-                }
+                    "size": "One Size" if size == "TU" else size,
+                    "out_of_stock": quantity
+                    }
 
         return skus
 
     def extract_product_url(self, response):
         return response.css("link[rel='canonical']::attr(href)").get()
 
+
+class CrawlingSpider(CrawlSpider):
+    name = "citadium"
+    allowed_domains = ["www.citadium.com"]
+    start_urls = ["https://www.citadium.com/fr/fr"]
+
+    listings_css = [
+        ".change-bg-anim a",
+        "li.container-submenu a.link_style-1",
+        "div.letter-header a",
+    ]
+    products_css = [
+        "#view-all-items .position-relative",
+    ]
+
+    parsing_spider = ParsingSpider()
+
+    rules = (
+        Rule(LinkExtractor(restrict_css=listings_css),
+             process_request="add_trail_and_follow", follow=True),
+        Rule(LinkExtractor(restrict_css=products_css),
+             process_request="add_trail_and_follow", callback=parsing_spider.parse_products),
+    )
+
+    def add_trail_and_follow(self, request, response):
+        request.meta.update({"trail": self.get_updated_trail(response)})
+        return request
+
+    def extract_page_name(self, response):
+        page_names = response.css("div.block-breadcrum span[itemprop='name']::text").getall()
+        return page_names[-1].strip() if page_names else ""
+
+    def get_updated_trail(self, response):
+        page_name = self.extract_page_name(response)
+        url = response.url
+        trail = deepcopy(response.meta.get("trail", []))
+        trail.append([page_name, url])
+
+        return trail
