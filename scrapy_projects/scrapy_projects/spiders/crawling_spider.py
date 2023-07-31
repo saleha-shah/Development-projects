@@ -15,7 +15,7 @@ class CrawlingSpider(CrawlSpider):
         ".change-bg-anim a",
         "li.container-submenu a.link_style-1",
         "div.letter-header a",
-        "link[rel='next']"
+        "link[rel='next']",
     ]
     products_css = [
         "#view-all-items .position-relative",
