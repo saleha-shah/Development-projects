@@ -15,6 +15,7 @@ class CrawlingSpider(CrawlSpider):
         ".change-bg-anim a",
         "li.container-submenu a.link_style-1",
         "div.letter-header a",
+        "link[rel='next']"
     ]
     products_css = [
         "#view-all-items .position-relative",
@@ -24,7 +25,7 @@ class CrawlingSpider(CrawlSpider):
 
     rules = (
         Rule(LinkExtractor(restrict_css=listings_css),
-             process_request="add_trail_and_follow", follow=True),
+             process_request="add_trail_and_follow"),
         Rule(LinkExtractor(restrict_css=products_css),
              process_request="add_trail_and_follow", callback=parsing_spider.parse_products),
     )
@@ -34,8 +35,8 @@ class CrawlingSpider(CrawlSpider):
         return request
 
     def extract_page_name(self, response):
-        page_names = response.css("div.block-breadcrum span[itemprop='name']::text").getall()
-        return page_names[-1].strip() if page_names else ""
+        page_name = response.css("title::text").get()
+        return page_name
 
     def get_updated_trail(self, response):
         page_name = self.extract_page_name(response)

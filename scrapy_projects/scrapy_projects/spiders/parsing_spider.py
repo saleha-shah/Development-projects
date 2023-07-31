@@ -17,7 +17,7 @@ class ParsingSpider(CrawlSpider):
         urls = response.css("div.swiper-container-colors li a::attr(href)").getall()
         for url in urls:
             yield Request(url=url, callback=self.extract_product_info,
-                          method="GET", meta={"trail": response.meta.get("trail", [])})
+                          meta={"trail": response.meta.get("trail", [])})
 
     def extract_product_info(self, response):
         item = ScrapyProjectsItem()
@@ -67,36 +67,37 @@ class ParsingSpider(CrawlSpider):
         return response.css("html::attr(lang)").get().split("-")[1]
 
     def extract_product_name(self, response):
-        return response.css("h1.fs-18.mb-3.d-flex.flex-column::text")[1].getall()[0].strip()
+        return response.css("h1::text")[1].getall()[0].strip()
 
     def extract_product_price(self, response):
-        return response.css("p.text_style-11 span::text").get().split("\xa0")[0].replace(",", ".")
+        price = response.css("p.text_style-11 span::text").get().split("\xa0")[0].replace(",", ".")
+        return float(price)
 
     def extract_product_retailer_sku(self, response):
         return response.css("link[rel='canonical']::attr(href)").get().split("-")[-1]
 
     def extract_product_skus(self, response):
-        html_content = response.text
-        script_content = findall(r"dataLayer\.push\((\{.*?\})\);", html_content)
+        script_content = findall(r'dataLayer\.push\((\{.*?\})\);',
+                                 response.xpath("//script")[1].extract())
+        json_data = loads(script_content[1])
 
-        if script_content:
-            json_data = loads(script_content[1])
-            skus = {}
-            product = json_data.get("ecommerce", {}).get("detail", {}).get("products", [])[0]
-            variants = product.get("sizes", [])
-            for variant in variants:
-                sku_id = variant.get("refId")
-                price = variant.get("price")
-                size = variant.get("size").replace(",", ".")
-                quantity = False if variant.get("quantity") else True
+        skus = {}
+        product = json_data.get("ecommerce", {}).get("detail", {}).get("products", [])[0]
+        variants = product.get("sizes", [])
 
-                skus[sku_id] = {
-                    "color": response.css("p.active-color::text").get(),
-                    "currency": self.extract_product_currency(response),
-                    "price": price,
-                    "size": "One Size" if size == "TU" else size,
-                    "out_of_stock": quantity
-                    }
+        for variant in variants:
+            sku_id = variant.get("refId")
+            price = float(variant.get("price"))
+            size = variant.get("size").replace(",", ".")
+            quantity = not variant.get("quantity")
+
+            skus[sku_id] = {
+                "color": response.css("p.active-color::text").get(),
+                "currency": self.extract_product_currency(response),
+                "price": price,
+                "size": "One Size" if size == "TU" else size,
+                "out_of_stock": quantity
+                }
 
         return skus
 
