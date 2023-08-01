@@ -2,9 +2,7 @@ from copy import deepcopy
 from json import loads
 from re import findall
 
-
 from scrapy.spiders import CrawlSpider
-from scrapy import Request
 
 from scrapy_projects.items import ScrapyProjectsItem
 
@@ -13,13 +11,7 @@ class ParsingSpider(CrawlSpider):
     allowed_domains = ["www.citadium.com"]
     name = "citadium_parser"
 
-    def parse_products(self, response):
-        urls = response.css("div.swiper-container-colors li a::attr(href)").getall()
-        for url in urls:
-            yield Request(url=url, callback=self.extract_product_info,
-                          meta={"trail": response.meta.get("trail", [])})
-
-    def extract_product_info(self, response):
+    def parse_product(self, response):
         item = ScrapyProjectsItem()
         item["brand"] = self.extract_product_brand(response)
         item["category"] = self.extract_product_category(response)
