@@ -1,6 +1,5 @@
 from copy import deepcopy
 
-from scrapy import Request
 from scrapy.spiders import Spider
 
 from scrapy_projects.items import ScrapyProjectsItem
@@ -10,7 +9,7 @@ class ParsingSpider(Spider):
     name = "damsel_parser"
     allowed_domains = ["www.damselinadress.com"]
 
-    def parse_product(self, response):
+    def parse(self, response):
         item = ScrapyProjectsItem()
         item["brand"] = self.extract_product_brand(response)
         item["care"] = self.extract_product_care(response)
@@ -23,14 +22,11 @@ class ParsingSpider(Spider):
         item["name"] = self.extract_product_name(response)
         item["price"] = self.extract_product_price(response)
         item["retailer_sku"] = self.extract_product_retailer_sku(response)
+        item["skus"] = self.extract_product_skus(response)
         item["trail"] = deepcopy(response.meta.get("trail", []))
         item["url"] = self.extract_product_url(response)
-        skus_requests = self.extract_product_skus(response)
 
-        for request in skus_requests:
-            request.meta.update({"item":  item})
-
-            yield request
+        yield item
 
     def extract_product_brand(self, response):
         return response.css(".product-detail__brand-name::text").get()
@@ -66,26 +62,13 @@ class ParsingSpider(Spider):
     def extract_product_retailer_sku(self, response):
         return response.css("script::text").re_first(r'"id":"(\w+)"')
 
-    def extract_product_skus(self, response):
-        color_selector = ".product-detail__attribute__value[data-attr='color']::attr(data-action)"
-        color_links = response.css(color_selector).getall()
-        requests = []
-        for link in color_links:
-            skus_request = Request(url=link, callback=self.parse_dynamic_data)
-            requests.append(skus_request)
-
-        return requests
-
     def extract_product_url(self, response):
         return response.css("link[rel='canonical']::attr(href)").get()
 
-    def parse_dynamic_data(self, response):
+    def extract_product_skus(self, response):
         size_elements = response.css(".product-detail__attribute__value[data-attr='size']")
-        item = response.meta.get("item", {})
-        skus = item.get("skus", {})
-
-        color_selector = ".product-detail__attribute__value--current::attr(data-tippy-content)"
-        color = response.css(color_selector).get()
+        skus = {}
+        color = response.css(".product-detail__attribute__display-value::text").get().strip()
 
         for size_element in size_elements:
             size = size_element.css("p::attr(data-value)").get()
@@ -95,11 +78,9 @@ class ParsingSpider(Spider):
             skus[sku_key] = {
                 "colour": color,
                 "size": size,
-                "currency": item["currency"],
+                "currency": self.extract_product_currency(response),
                 "price": self.extract_product_price(response),
                 "out_of_stock": out_of_stock,
             }
-        item["skus"] = skus
-        if skus:
 
-            yield item
+        return skus
