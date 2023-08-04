@@ -7,6 +7,18 @@ import scrapy
 
 
 class ScrapyProjectsItem(scrapy.Item):
-    # define the fields for your item here like:
-    # name = scrapy.Field()
-    pass
+    brand = scrapy.Field()
+    care = scrapy.Field()
+    category = scrapy.Field()
+    currency = scrapy.Field()
+    description = scrapy.Field()
+    gender = scrapy.Field()
+    image_urls = scrapy.Field()
+    lang = scrapy.Field()
+    market = scrapy.Field()
+    name = scrapy.Field()
+    price = scrapy.Field()
+    retailer_sku = scrapy.Field()
+    skus = scrapy.Field()
+    trail = scrapy.Field()
+    url = scrapy.Field()
