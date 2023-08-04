@@ -22,4 +22,3 @@ class ScrapyProjectsItem(scrapy.Item):
     skus = scrapy.Field()
     trail = scrapy.Field()
     url = scrapy.Field()
-
