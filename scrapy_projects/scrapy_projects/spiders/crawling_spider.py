@@ -24,7 +24,7 @@ class CrawlingSpider(CrawlSpider):
         Rule(LinkExtractor(restrict_css=listings_css),
              process_request="add_trail_and_follow"),
         Rule(LinkExtractor(restrict_css=products_css),
-             process_request="add_trail_and_follow", callback=parsing_spider.parse_product),
+             process_request="add_trail_and_follow", callback=parsing_spider.parse),
     )
 
     def add_trail_and_follow(self, request, response):
