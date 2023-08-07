@@ -8,6 +8,7 @@ import scrapy
 
 class ScrapyProjectsItem(scrapy.Item):
     brand = scrapy.Field()
+    care = scrapy.Field()
     category = scrapy.Field()
     currency = scrapy.Field()
     description = scrapy.Field()
