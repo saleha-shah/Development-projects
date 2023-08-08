@@ -1,13 +1,13 @@
-from copy import deepcopy
+import copy
 
-from scrapy.spiders import Spider
+from scrapy.linkextractors import LinkExtractor
+from scrapy.spiders import Rule, CrawlSpider
 
 from scrapy_projects.items import ScrapyProjectsItem
 
 
-class ParsingSpider(Spider):
+class ParsingSpider(CrawlSpider):
     name = "damsel_parser"
-    allowed_domains = ["www.damselinadress.com"]
 
     def parse(self, response):
         item = ScrapyProjectsItem()
@@ -23,7 +23,7 @@ class ParsingSpider(Spider):
         item["price"] = self.extract_product_price(response)
         item["retailer_sku"] = self.extract_product_retailer_sku(response)
         item["skus"] = self.extract_product_skus(response)
-        item["trail"] = deepcopy(response.meta.get("trail", []))
+        item["trail"] = copy.deepcopy(response.meta.get("trail", []))
         item["url"] = self.extract_product_url(response)
 
         yield item
@@ -66,13 +66,13 @@ class ParsingSpider(Spider):
         return response.css("link[rel='canonical']::attr(href)").get()
 
     def extract_product_skus(self, response):
-        size_elements = response.css(".product-detail__attribute__value[data-attr='size']")
+        size_elements = response.css("[data-attr='size']")
         skus = {}
         color = response.css(".product-detail__attribute__display-value::text").get().strip()
 
         for size_element in size_elements:
-            size = size_element.css("p::attr(data-value)").get()
-            out_of_stock = "Out of Stock" in size_element.css("p::attr(data-tippy-content)").get()
+            size = size_element.css("::attr(data-value)").get()
+            out_of_stock = "Out of Stock" in size_element.css("::attr(data-tippy-content)").get()
 
             sku_key = f"{color}_{size}"
             skus[sku_key] = {
@@ -84,3 +84,40 @@ class ParsingSpider(Spider):
             }
 
         return skus
+
+
+class CrawlingSpider(CrawlSpider):
+    name = "damsel"
+    allowed_domains = ["www.damselinadress.com"]
+    start_urls = ["https://www.damselinadress.com"]
+
+    listings_css = [
+        "li.d-lg-block a",
+    ]
+    products_css = [
+        ".pdp-link a",
+    ]
+
+    parsing_spider = ParsingSpider()
+
+    rules = (
+        Rule(LinkExtractor(restrict_css=listings_css),
+             process_request="add_trail_and_follow"),
+        Rule(LinkExtractor(restrict_css=products_css),
+             process_request="add_trail_and_follow", callback=parsing_spider.parse),
+    )
+
+    def add_trail_and_follow(self, request, response):
+        request.meta.update({"trail": self.get_updated_trail(response)})
+        return request
+
+    def extract_page_name(self, response):
+        return response.css("title::text").get()
+
+    def get_updated_trail(self, response):
+        page_name = self.extract_page_name(response)
+        url = response.url
+        trail = copy.deepcopy(response.meta.get("trail", []))
+        trail.append([page_name, url])
+
+        return trail
