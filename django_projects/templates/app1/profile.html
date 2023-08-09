@@ -1,0 +1,55 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'css/profile.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <div class="messages">
+            {% if messages %}
+                <ul>
+                    {% for message in messages %}
+                        <li class="{{ message.tags }}">{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </div>
+        <div class="profile-card">
+            <div class="profile-avatar">
+                <a href="{% url 'edit_profile' %}">
+                    <i class="fas fa-user-edit fa-5x icon-blue"></i>
+                </a>
+            </div>
+            <h2 class="profile-heading">Your Profile</h2>
+            <div class="profile-info">
+                <strong>Username: </strong>{{ user_profile.user.username }}
+            </div>
+            <div class="profile-info">
+                <strong>First Name: </strong>{{ user_profile.user.first_name }}
+            </div>
+            <div class="profile-info">
+                <strong>Last Name: </strong>{{ user_profile.user.last_name }}
+            </div>
+            
+            <div class="profile-info">
+                <strong>Email: </strong>{{ user_profile.user.email }}
+            </div>
+            <div class="profile-info">
+                <strong>Gender: </strong>{{ user_profile.gender }}
+            </div>
+            <div class="profile-info">
+                <strong>Date of Birth: </strong>{{ user_profile.dob }}
+            </div>
+
+            <div class="signout-button">
+                <a href="{% url 'signout' %}" class="btn-signout">Sign Out</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
