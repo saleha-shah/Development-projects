@@ -2,23 +2,25 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.contrib.auth.models import User
 from django.contrib.auth import logout
 
-from app1.forms import RegisterForm, LoginForm, EditProfileForm, UserEditForm
-from app1.models import ProfileInfo
+from account.forms import RegisterForm, LoginForm, EditProfileForm, UserEditForm
+from account.models import ProfileInfo
+
+
+def dashboard(request):
+    return render(request, 'account/dashboard.html')
 
 
 @login_required
 def profile(request):
     user_profile = ProfileInfo.objects.get(user=request.user)
-    return render(request, 'app1/profile.html', {'user_profile': user_profile})
+    return render(request, 'account/profile.html', {'user_profile': user_profile})
 
 
 def signup(request):
     if request.method == 'GET':
-        form = RegisterForm()
-        return render(request, 'app1/register.html', {'form': form})
+        return render(request, 'account/register.html', {'form': RegisterForm()})
 
     if request.method == 'POST':
         form = RegisterForm(request.POST)
@@ -37,16 +39,15 @@ def signup(request):
             messages.success(request, 'You have signed up successfully.')
             login(request, user)
 
-            return redirect('profile')
+            return redirect('dashboard')
         else:
             messages.error(request, 'Invalid signup')
-            return render(request, 'app1/register.html', {'form': form})
+            return render(request, 'account/register.html', {'form': form})
 
 
 def sign_in(request):
     if request.method == 'GET':
-        form = LoginForm()
-        return render(request, 'app1/signin.html', {'form': form})
+        return render(request, 'account/signin.html', {'form': LoginForm()})
 
     elif request.method == 'POST':
         form = LoginForm(request.POST)
@@ -57,31 +58,19 @@ def sign_in(request):
             user = authenticate(request, username=username, password=password)
             if user:
                 login(request, user)
-                messages.success(request, f'Hi {username.title()}, welcome back!')
+                messages.success(request, f'Hi {user.first_name} {user.last_name}, welcome back!')
 
-                return redirect('profile')
+                return redirect('dashboard')
 
         messages.error(request, 'Invalid username or password')
 
-        return render(request, 'app1/signin.html', {'form': form})
-
-
-def user_list(request):
-    users = User.objects.all()
-    return render(request, 'app1/user_list.html', {'users': users})
-
-
-def delete_user(request, user_id):
-    user = User.objects.get(id=user_id)
-    user.delete()
-
-    return redirect('user_list')
+        return render(request, 'account/signin.html', {'form': form})
 
 
 @login_required
 def sign_out(request):
     logout(request)
-    return redirect('signin')
+    return redirect('dashboard')
 
 
 @login_required
@@ -96,15 +85,11 @@ def edit_profile(request):
         if user_form.is_valid() and profile_form.is_valid():
             user_form.save()
             profile_form.save()
-
+            messages.success(request, 'Changes saved successfully!')
             return redirect('profile')
     else:
         user_form = UserEditForm(instance=user)
         profile_form = EditProfileForm(instance=profile)
 
-    context = {
-        'user_form': user_form,
-        'profile_form': profile_form,
-    }
+    return render(request, 'account/edit_profile.html', {'forms': [user_form, profile_form]})
 
-    return render(request, 'app1/edit_profile.html', context)

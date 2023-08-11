@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
 
-from app1.models import ProfileInfo
+from account.models import ProfileInfo
 
 
 class LoginForm(forms.Form):
@@ -30,7 +30,8 @@ class RegisterForm(UserCreationForm):
             'password1',
             'password2',
             'gender',
-            'dob']
+            'dob'
+        ]
 
     def save(self, commit=True):
         user = super().save(commit=False)
@@ -55,7 +56,7 @@ class EditProfileForm(forms.ModelForm):
         fields = [
             'gender',
             'dob',
-            ]
+        ]
 
 
 class UserEditForm(UserChangeForm):
@@ -65,4 +66,4 @@ class UserEditForm(UserChangeForm):
             'first_name',
             'last_name',
             'email',
-            ]
+        ]
