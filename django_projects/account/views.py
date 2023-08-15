@@ -3,9 +3,10 @@ from django.contrib.auth import login, authenticate
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.contrib.auth import logout
+from django.core.paginator import Paginator
 
 from account.forms import RegisterForm, LoginForm, EditProfileForm, UserEditForm
-from account.models import ProfileInfo
+from account.models import ProfileInfo, Listing
 
 
 def dashboard(request):
@@ -93,3 +94,34 @@ def edit_profile(request):
 
     return render(request, 'account/edit_profile.html', {'forms': [user_form, profile_form]})
 
+
+def listing_page(request):
+    products = Listing.objects.all()
+
+    paginator = Paginator(products, 50)
+    page_number = request.GET.get('page')
+    pages = paginator.get_page(page_number)
+
+    listings = []
+    for listing in pages:
+        image_url = listing.image_urls.split(',')[0][1:].replace("'", "")
+        listings.append({
+            'listing': listing,
+            'image_url': image_url
+        })
+
+    return render(request, 'account/listings.html', {'listings': listings, 'pages': pages})
+
+
+def product_detail(request, product_id):
+    product = Listing.objects.get(id=product_id)
+    image_url = product.image_urls.split(',')[0][1:].replace("'", "")
+    description = product.description[1:-1]
+    description_list = description.split(',')
+
+    data = {
+        'product': product,
+        'image_url': image_url,
+        'description_list': description_list,
+    }
+    return render(request, 'account/product_detail.html', data)

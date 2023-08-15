@@ -1,0 +1,23 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/product_detail.css' %}">
+    <title>Product Detail</title>
+</head>
+<body>
+    <div class="product-detail">
+        <img src="{{ image_url|safe }}" alt="{{ product.name }}">
+        <h2>{{ product.name }}</h2>
+        <p>Price: {{ product.price }} {{ product.currency }}</p>
+        <ul>
+            {% for point in description_list %}
+                <li>{{ point }}</li>
+            {% endfor %}
+        </ul>
+        <p>Brand: {{ product.brand }}</p>
+    </div>
+</body>
+</html>
