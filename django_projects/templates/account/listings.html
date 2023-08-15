@@ -24,11 +24,7 @@
        
         <span class="page-links">
           {% for page in pages.paginator.page_range %}
-            {% if page_listings.number == page %}
-              <span class="current-page">{{ page }}</span>
-            {% else %}
               <a href="?page={{ page }}">{{ page }}</a>
-            {% endif %}
           {% endfor %}
         </span>
       </div>

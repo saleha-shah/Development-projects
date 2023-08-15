@@ -9,15 +9,15 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         with open('output.json') as f:
             data = json.load(f)
-        
+
         for item in data:
             listing = Listing(
                 brand=item['brand'],
                 care=item['care'],
-                category=item['category'],
+                category=json.dumps(item['category']),
                 currency=item['currency'],
-                description=item['description'],
-                image_urls=item['image_urls'],
+                description=json.dumps(item['description']),
+                image_urls=json.dumps(item['image_urls']),
                 lang=item['lang'],
                 market=item['market'],
                 name=item['name'],

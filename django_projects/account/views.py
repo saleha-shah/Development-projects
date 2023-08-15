@@ -1,3 +1,5 @@
+import json
+
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.decorators import login_required
@@ -95,16 +97,19 @@ def edit_profile(request):
     return render(request, 'account/edit_profile.html', {'forms': [user_form, profile_form]})
 
 
+def decode_json(object):
+    return json.decoder.JSONDecoder().decode(object)
+
+
 def listing_page(request):
     products = Listing.objects.all()
 
     paginator = Paginator(products, 50)
     page_number = request.GET.get('page')
     pages = paginator.get_page(page_number)
-
     listings = []
     for listing in pages:
-        image_url = listing.image_urls.split(',')[0][1:].replace("'", "")
+        image_url = decode_json(listing.image_urls)[0]
         listings.append({
             'listing': listing,
             'image_url': image_url
@@ -115,13 +120,14 @@ def listing_page(request):
 
 def product_detail(request, product_id):
     product = Listing.objects.get(id=product_id)
-    image_url = product.image_urls.split(',')[0][1:].replace("'", "")
-    description = product.description[1:-1]
-    description_list = description.split(',')
+
+    image_urls = decode_json(product.image_urls)
+    description = decode_json(product.description)
 
     data = {
         'product': product,
-        'image_url': image_url,
-        'description_list': description_list,
+        'image_urls': image_urls,
+        'description': description,
     }
+    
     return render(request, 'account/product_detail.html', data)

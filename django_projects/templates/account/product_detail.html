@@ -9,15 +9,19 @@
 </head>
 <body>
     <div class="product-detail">
-        <img src="{{ image_url|safe }}" alt="{{ product.name }}">
         <h2>{{ product.name }}</h2>
-        <p>Price: {{ product.price }} {{ product.currency }}</p>
+        {% for image_url in image_urls %}
+        <img src="{{ image_url|safe }}" alt="{{ product.name }}">
+        {% endfor %}
+        <p><strong>Price: </strong>{{ product.price }} {{ product.currency }}</p>
+        <p><strong>Description: </strong></p>
         <ul>
-            {% for point in description_list %}
+            {% for point in description %}
                 <li>{{ point }}</li>
             {% endfor %}
         </ul>
-        <p>Brand: {{ product.brand }}</p>
+        <p><strong>Care: </strong>{{ product.care }}</p>
+        <p><strong>Brand: </strong>{{ product.brand }}</p>
     </div>
 </body>
 </html>
