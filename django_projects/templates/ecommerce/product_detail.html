@@ -1,0 +1,59 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/product_detail.css' %}">
+    <title>Product Detail</title>
+</head>
+<body>
+    
+    <div class="product-detail">
+        <h2>{{ product.name }}</h2>
+        <div class="categories">{% for point in categories %}
+                > {{ point }}
+            {% endfor %}
+        </div>
+        <div class="product-images">
+        {% for image_url in image_urls %}
+        <img src="{{ image_url|safe }}" alt="{{ product.name }}">
+        {% endfor %}
+        </div>
+        <p><strong>Brand: </strong>{{ product.brand }}</p>
+        <p><strong>Price: </strong>{{ product.price }} {{ product.currency }}</p>
+        <p><strong>Description: </strong></p>
+        <ul>
+            {% for point in descriptions %}
+                <li>{{ point }}</li>
+            {% endfor %}
+            <li>For {{ product.gender }}</li>
+        </ul>
+        <p><strong>Care: </strong></p>
+        <ul>
+            {% for point in cares %}
+                <li>{{ point }}</li>
+            {% endfor %}
+        </ul>
+        <table>
+            <thead>
+                <tr>
+                    <th>Color</th>
+                    <th>Size</th>
+                    <th>Price</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for sku in skus %}
+                    <tr>
+                        <td>{{ sku.color }}</td>
+                        <td>{{ sku.size }}</td>
+                        <td>{{ sku.price }} {{ sku.currency }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+       
+    </div>
+</body>
+</html>

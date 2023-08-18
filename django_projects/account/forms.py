@@ -16,7 +16,6 @@ class RegisterForm(UserCreationForm):
         ('F', 'Female'),
         ('O', 'Other'),
     ]
-
     gender = forms.ChoiceField(choices=gender_choices)
     dob = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}))
 
@@ -67,3 +66,4 @@ class UserEditForm(UserChangeForm):
             'last_name',
             'email',
         ]
+        unique_together = ['email']

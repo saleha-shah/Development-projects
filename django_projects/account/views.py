@@ -12,7 +12,7 @@ def dashboard(request):
     return render(request, 'account/dashboard.html')
 
 
-@login_required
+@login_required(login_url='signin')
 def profile(request):
     user_profile = ProfileInfo.objects.get(user=request.user)
     return render(request, 'account/profile.html', {'user_profile': user_profile})
@@ -33,7 +33,7 @@ def signup(request):
                 user=user,
                 gender=form.cleaned_data['gender'],
                 dob=form.cleaned_data['dob']
-                )
+            )
             profile.save()
 
             messages.success(request, 'You have signed up successfully.')
@@ -41,7 +41,12 @@ def signup(request):
 
             return redirect('dashboard')
         else:
-            messages.error(request, 'Invalid signup')
+            error_messages = []
+            for field, errors in form.errors.items():
+                error_messages.extend(errors)
+
+            error_message = ', '.join(error_messages)
+            messages.error(request, f'Invalid signup: {error_message}')
             return render(request, 'account/register.html', {'form': form})
 
 

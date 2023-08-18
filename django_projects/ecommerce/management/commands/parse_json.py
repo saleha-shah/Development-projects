@@ -24,6 +24,7 @@ class Command(BaseCommand):
                 market=item['market'],
                 name=item['name'],
                 price=item['price'],
+                gender=item['gender'],
                 retailer_sku=item['retailer_sku'],
                 trail=item['trail'],
                 url=item['url']

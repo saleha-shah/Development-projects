@@ -7,18 +7,20 @@
     <link rel="stylesheet" type="text/css" href="{% static 'css/dashboard.css' %}">
     <title>Dashboard</title>
 </head>
-<body>
-    <nav>
-        <ul>
-            {% if user.is_authenticated %}
-                <li><a href="{% url 'profile' %}">Profile</a></li>
-                <li><a href="{% url 'signout' %}">Logout</a></li>
-            {% else %}
-                <li><a href="{% url 'signup' %}">Sign Up</a></li>
-                <li><a href="{% url 'signin' %}">Sign In</a></li>
-            {% endif %}
-        </ul>
-    </nav>
+<nav>
+    <ul>
+        {% if user.is_authenticated %}
+            <li><a href="{% url 'profile' %}">Profile</a></li>
+            <li><a href="{% url 'signout' %}">Logout</a></li>
+        {% else %}
+            <li><a href="{% url 'signup' %}">Sign Up</a></li>
+            <li><a href="{% url 'signin' %}">Sign In</a></li>
+        {% endif %}
+        <li><a href="{% url 'ecommerce:listings' %}">Our Products</a></li>
+    </ul>
+</nav>
+<body >
+    <h1>Sleek  Boutique</h1>
     <div class="messages">
         {% if messages %}
             <ul>
