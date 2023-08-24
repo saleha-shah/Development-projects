@@ -1,0 +1,115 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cart</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'css/cart.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+</head>
+<body>
+    {% if total_price|floatformat:2 != "0.00" %}
+    <h1>Your Cart <i class="fa fa-shopping-cart"></i></h1>
+    
+  <table class="cart-table">
+    <tr>
+        <th>Product</th>
+        <th>Size</th>
+        <th>Quantity</th>
+        <th>Price</th>
+        <th>Action</th>
+    </tr>
+    {% for cart_item in cart_items %}
+    <tr>
+        <td>{{ cart_item.product.name }}</td>
+        <td>{{ cart_item.size }}</td>
+        <td>
+            <button class="quantity-btn" data-action="decrease" data-item="{{ cart_item.id }}">-</button>
+            {{ cart_item.quantity }}
+            <button class="quantity-btn" data-action="increase" data-item="{{ cart_item.id }}">+</button>
+        </td>
+        <td>{{ cart_item.product.price|floatformat:2 }} {{ cart_item.product.currency }}</td>
+        <td>
+            <a href="javascript:void(0);" onclick="deleteCartItem({{ cart_item.id }})">
+                <i class="fa fa-trash"></i>
+            </a>
+        </td>
+
+    </tr>
+    {% endfor %}
+    <tr>
+        <td colspan="4"><strong>Total</strong></td>
+        <td><strong>{{ total_price|floatformat:2 }} {{ cart_items.0.product.currency }}</strong></td>
+    </tr>
+  </table>
+  <div class="cart-actions">
+    <a href="{% url 'ecommerce:checkout' %}" class="checkout-btn">Checkout</a>
+    <a href="{% url 'ecommerce:clear_cart' %}" class="clear-cart-btn">Clear Cart</a>
+    
+
+</div>
+{% else %}
+<h1>Your Cart is empty <i class="fa fa-frown-o"></i></h1>
+{% endif %}
+<a href="{% url 'ecommerce:listings' %}" class="back-to-home">Back to Home</a>
+
+
+  <script>
+    function deleteCartItem(itemId) {
+        fetch('/delete_cart_item/' + itemId + '/')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                }
+            });
+    }
+    document.addEventListener("DOMContentLoaded", function() {
+        const quantityButtons = document.querySelectorAll(".quantity-btn");
+        const clearCartButton = document.querySelector(".clear-cart-btn");
+    
+        quantityButtons.forEach(button => {
+            button.addEventListener("click", function(event) {
+                event.preventDefault();
+                const action = button.getAttribute("data-action");
+                const itemId = button.getAttribute("data-item");
+                updateQuantity(action, itemId);
+            });
+        });
+    
+        clearCartButton.addEventListener("click", function(event) {
+            event.preventDefault();
+            clearCart();
+        });
+    
+        function updateQuantity(action, itemId) {
+            fetch(`/update_quantity/${itemId}/${action}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        window.location.reload();
+                    }
+                })
+                .catch(error => {
+                    console.error("Error updating quantity:", error);
+                });
+        }
+    
+        function clearCart() {
+            fetch("/clear_cart")
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        window.location.reload();
+                    }
+                })
+                .catch(error => {
+                    console.error("Error clearing cart:", error);
+                });
+        }
+    });
+    </script>
+    
+</body>
+</html>

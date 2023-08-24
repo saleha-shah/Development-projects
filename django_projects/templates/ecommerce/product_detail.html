@@ -35,6 +35,19 @@
                 <li>{{ point }}</li>
             {% endfor %}
         </ul>
+        <div class="size-and-cart-container">
+            <div>
+            <strong>Select Size: </strong>
+            <select class="size-options" id="size-{{ product.retailer_sku }}">
+                {% for sku in skus %}
+                    <option value="{{ sku.size }}">{{ sku.size }}</option>
+                {% endfor %}
+            </select>
+            </div>
+        <div>
+            <a class="add-to-cart-link" href="{% url 'ecommerce:add_to_cart' product_id=product.retailer_sku size='default' %}">Add to cart</a>
+        </div>
+    </div>
         <table>
             <thead>
                 <tr>
@@ -55,5 +68,28 @@
         </table>
        
     </div>
+    
+    
+    
 </body>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const addToCartLinks = document.querySelectorAll(".add-to-cart-link");
+        const sizeOptions = document.querySelectorAll(".size-options");
+  
+        addToCartLinks.forEach((link, index) => {
+            link.addEventListener("click", function(event) {
+                event.preventDefault();
+                const selectedSize = sizeOptions[index].value;
+                if (selectedSize) {
+                    const originalHref = link.getAttribute("href");
+                    const updatedHref = originalHref.replace("default", selectedSize);
+                    window.location.href = updatedHref;
+                }
+            });
+        });
+    });
+  </script>
+  
 </html>

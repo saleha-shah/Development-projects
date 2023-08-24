@@ -1,0 +1,154 @@
+@import url('https://fonts.googleapis.com/css2?family=Monoton&display=swap');
+
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background: white;
+    background-repeat: no-repeat;
+    height: 100vh;
+}
+
+h1{
+    text-align: center;
+    font-family: sans-serif;
+    color: rgb(71, 10, 57);
+}
+
+.title-heading {
+    text-align: center;
+}
+
+.cart-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.cart-heading {
+    font-size: 24px;
+    margin-bottom: 20px;
+    color: rgb(98, 15, 78);
+}
+
+.cart-table {
+    width: 80%;
+    margin-left: auto;
+    margin-right: auto;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+    background-color:rgba(180, 152, 189, 0.52);
+    border: 1px solid white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.cart-table th,
+.cart-table td {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid #dddddd;
+}
+
+.cart-table th {
+    background-color:rgb(98, 15, 78);
+    color: white;
+}
+
+.cart-total {
+    text-align: right;
+    margin-top: 10px;
+    font-weight: bold;
+    color: rgb(98, 15, 78);
+}
+
+.cart-actions {
+    text-align: right;
+    margin-top: 20px;
+}
+
+.cart-actions a {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: rgb(98, 15, 78);
+    color: #ffffff;
+    text-decoration: none;
+    border-radius: 4px;
+}
+
+.cart-actions a:hover {
+    background-color: rgb(63, 10, 51);
+}
+.quantity-btn {
+    background-color: rgb(98, 15, 78);
+    color: #ffffff;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+    border-radius: 4px;
+    margin: 0 5px;
+}
+
+.fa-trash {
+    color: rgb(98, 15, 78);
+    cursor: pointer;
+}
+
+.clear-cart-btn {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: rgb(98, 15, 78);
+    color: #ffffff;
+    text-decoration: none;
+    border-radius: 4px;
+}
+
+.clear-cart-btn:hover {
+    background-color: rgb(63, 10, 51);
+}
+
+.cart-table th,
+.cart-table td {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid #dddddd;
+}
+
+.cart-table th {
+    background-color: rgb(98, 15, 78);
+    color: white;
+}
+
+.cart-actions {
+    text-align: right;
+    margin-top: 20px;
+    margin-right: 10vw;
+    
+}
+
+.cart-actions a {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: rgb(98, 15, 78);
+    color: #ffffff;
+    text-decoration: none;
+    border-radius: 4px;
+}
+
+.cart-actions a:hover {
+    background-color: rgb(63, 10, 51);
+}
+
+.back-to-home {
+    display: block;
+    text-align: center;
+    margin-top: 20px;
+    color: white;
+    text-decoration: none;
+    background-color: rgb(98, 15, 78);
+    width: 10%;
+    padding:10px;
+    border-radius: 4px;
+    margin-left: auto;
+    margin-right: auto;
+
+}

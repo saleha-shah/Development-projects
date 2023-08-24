@@ -5,9 +5,30 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" type="text/css" href="{% static 'css/product.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <title>listings</title>
 </head>
 <body>
+  <nav class="navbar">
+    <div class="nav-content">
+        <a class="logo" href="{% url 'ecommerce:listings' %}">Sleek  Boutique</a>
+        <ul class="nav-links">
+            <li><a href="{% url 'ecommerce:listings' %}">Our Products</a></li>
+            {% if user.is_authenticated %}
+            <li><a href="{% url 'account:profile' %}">Profile</a></li>
+            <li><a href="{% url 'ecommerce:cart' %}"><i class="fa fa-shopping-cart"></i></a></li>
+            <li><a href="{% url 'account:signout' %}">Logout</a></li>
+            {% else %}
+            <li><a href="{% url 'account:signup' %}">Sign Up</a></li>
+            <li><a href="{% url 'account:signin' %}">Sign In</a></li>
+            {% endif %}
+        </ul>
+        <form class="search-form" action="{% url 'ecommerce:search' %}" method="GET">
+            <input type="text" name="query" placeholder="Search products">
+            <button type="submit">Search</button>
+        </form>
+    </div>
+</nav>
     <h1 class="title-heading">Latest Arrival</h1>
     <div class="listings">
         {% for listing_data in listings %}
@@ -16,7 +37,17 @@
             <img src="{{ listing_data.image_urls.0|safe }}" alt="{{ listing_data.product.name }} Image">
             <p>{{ listing_data.product.price }} {{ listing_data.product.currency }}</p>
             <p><strong> {{ listing_data.product.brand }}</strong></p>
-            <a href="{% url 'ecommerce:product_detail' listing_data.product.retailer_sku %}">View Details</a>
+            <select class="size-options" id="size-{{ listing_data.product.retailer_sku }}">
+              {% for sku in listing_data.skus %}
+                  <option value="{{ sku.size }}">{{ sku.size }}</option>
+              {% endfor %}
+          </select>
+          
+          <div class="listing-links">
+              <a href="{% url 'ecommerce:product_detail' listing_data.product.retailer_sku %}">View Details</a>
+              <a class="add-to-cart-link" href="{% url 'ecommerce:add_to_cart' product_id=listing_data.product.retailer_sku size='default' %}">Add to cart</a>
+
+          </div>
           </div>
         {% endfor %}
       </div>
@@ -29,4 +60,22 @@
         </span>
       </div>
 </body>
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+      const addToCartLinks = document.querySelectorAll(".add-to-cart-link");
+      const sizeOptions = document.querySelectorAll(".size-options");
+
+      addToCartLinks.forEach((link, index) => {
+          link.addEventListener("click", function(event) {
+              event.preventDefault();
+              const selectedSize = sizeOptions[index].value;
+              if (selectedSize) {
+                  const originalHref = link.getAttribute("href");
+                  const updatedHref = originalHref.replace("default", selectedSize);
+                  window.location.href = updatedHref;
+              }
+          });
+      });
+  });
+</script>
 </html>

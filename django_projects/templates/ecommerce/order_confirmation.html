@@ -1,0 +1,37 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Confirmation</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'css/order_confirmation.css' %}">
+</head>
+<body>
+    <div class="order-confirmation">
+        <div class="thank-you">
+            <h1>Thank You!</h1>
+            <p>Your order has been successfully placed.</p>
+        </div>
+        <div class="order-summary">
+            <h2>Order Summary</h2>
+            <p><strong>Order ID:</strong> {{ order.order_id }}</p>
+            <p><strong>Shipping Address:</strong> {{ order.shipping_address }}</p>
+            <p><strong>Order Date:</strong> {{ order.order_date }}</p>
+            <p><strong>Expected Delivery Date:</strong> {{ order.expected_delivery_date }}</p>
+            <p><strong>Email:</strong> {{ order.user.email }}</p>
+            <p><strong>Contact Number:</strong> {{ order.contact_info }}</p>
+            <p><strong>Payment Method:</strong> {{ order.payment_method }}</p>
+            <h3>Items in Cart:</h3>
+            <ul class="cart-items">
+                {% for ordered_item in order.ordereditem_set.all %}
+                <li>{{ ordered_item.cart_item.product.name }} (Size: {{ ordered_item.cart_item.size }}) - Quantity: {{ ordered_item.quantity }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        
+    </div>
+    <a href="{% url 'ecommerce:listings' %}" class="back-to-home">Back to Home</a>
+</body>
+</html>

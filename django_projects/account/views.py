@@ -39,7 +39,7 @@ def signup(request):
             messages.success(request, 'You have signed up successfully.')
             login(request, user)
 
-            return redirect('dashboard')
+            return redirect('account:dashboard')
         else:
             error_messages = []
             for field, errors in form.errors.items():
@@ -65,7 +65,7 @@ def sign_in(request):
                 login(request, user)
                 messages.success(request, f'Hi {user.first_name} {user.last_name}, welcome back!')
 
-                return redirect('dashboard')
+                return redirect('account:dashboard')
 
         messages.error(request, 'Invalid username or password')
 

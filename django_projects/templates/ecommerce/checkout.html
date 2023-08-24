@@ -1,0 +1,37 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/checkout.css' %}">
+    <title>Checkout</title>
+</head>
+<body>
+    <h1>Checkout</h1>
+
+    <form method="post">
+        {% csrf_token %}
+        
+        <div class="checkout-section">
+            <h2>Shipping Information</h2>
+            {{ form.shipping_address }}
+        </div>
+        <div class="checkout-section">
+            <h2>Contact Number</h2>
+            {{ form.contact_info }}
+        </div>
+
+        <div class="checkout-section">
+            <h2>Payment Method</h2>
+            {{ form.payment_method }}
+        </div>
+        <div class="checkout-section">
+            <h2>Order Summary</h2>
+            <p>Total Price: <strong>{{ total_price|floatformat:2 }} {{ cart_items.0.product.currency }}</strong></p>
+        </div>
+        <button type="submit" class="checkout-btn">Place Order</button>
+    </form>
+
+</body>
+</html>

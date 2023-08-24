@@ -1,0 +1,84 @@
+
+body, h1, h2, h3, p, ul, li {
+    margin: 0;
+    padding: 0;
+}
+
+
+body {
+    font-family: Arial, sans-serif;
+    background: rgba(180, 152, 189, 0.52);
+}
+
+.order-confirmation {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #ffffff;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+
+.thank-you {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.thank-you h1 {
+    color: rgb(98, 15, 78);
+    font-size: 36px;
+    margin-bottom: 10px;
+}
+
+
+.order-summary h2 {
+    font-size: 24px;
+    margin-bottom: 15px;
+}
+
+.order-summary p {
+    margin-bottom: 10px;
+}
+
+.cart-items {
+    list-style: none;
+    padding-left: 20px;
+}
+
+.cart-items li {
+    margin-bottom: 10px;
+    position: relative;
+}
+
+.cart-items li:before {
+    content: "•";
+    position: absolute;
+    left: -15px;
+    color: #333;
+}
+
+.item-price {
+    float: right;
+}
+
+.total-price {
+    font-weight: bold;
+    margin-top: 15px;
+    float: right;
+}
+
+.back-to-home {
+    display: block;
+    text-align: center;
+    margin-top: 20px;
+    color: white;
+    text-decoration: none;
+    background-color: rgb(98, 15, 78);
+    width: 10%;
+    padding:10px;
+    border-radius: 4px;
+    margin-left: auto;
+    margin-right: auto;
+
+}
