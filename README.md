@@ -53,15 +53,19 @@ python -m venv venv
 source venv/bin/activate
 ```
 3. Install the project dependencies:
+```python
 python -m pip install Django
-
+```
 4. Set up the database and apply migrations:
+```python
 python manage.py migrate
-
+```
 5. Parse JSON data and populate the database:
+```python
 python manage.py parse_json /path/to/filename.json
-
+```
 6. Run the development server:
+```python
 python manage.py runserver
-
+```
 7. Access the application in your browser at `http://127.0.0.1:8000/`
