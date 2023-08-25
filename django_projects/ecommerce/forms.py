@@ -1,4 +1,5 @@
 from django import forms
+from django.core.validators import MinLengthValidator, MaxLengthValidator
 
 
 class CheckoutForm(forms.Form):
@@ -11,4 +12,8 @@ class CheckoutForm(forms.Form):
 
     payment_method = forms.ChoiceField(choices=PAYMENT_METHOD_CHOICES, widget=forms.RadioSelect)
     shipping_address = forms.CharField(max_length=500)
-    contact_info = forms.CharField(max_length=11)
+    contact_info = forms.CharField(
+        max_length=11,
+        validators=[MinLengthValidator(11), MaxLengthValidator(11)],
+        help_text="Please enter your 11-digit contact number."
+    )

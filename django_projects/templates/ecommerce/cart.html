@@ -7,8 +7,25 @@
     <title>Cart</title>
     <link rel="stylesheet" type="text/css" href="{% static 'css/cart.css' %}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script type="text/javascript" src="{% static 'ecommerce/cart.js' %}"></script>
 </head>
 <body>
+    <nav class="navbar">
+        <div class="nav-content">
+            <a class="logo" href="{% url 'ecommerce:listings' %}">Sleek  Boutique</a>
+            <ul class="nav-links">
+                <li><a href="{% url 'ecommerce:listings' %}">Our Products</a></li>
+                {% if user.is_authenticated %}
+                <li><a href="{% url 'account:profile' %}">Profile</a></li>
+                <li><a href="{% url 'ecommerce:cart' %}"><i class="fa fa-shopping-cart"></i></a></li>
+                <li><a href="{% url 'account:signout' %}">Logout</a></li>
+                {% else %}
+                <li><a href="{% url 'account:signup' %}">Sign Up</a></li>
+                <li><a href="{% url 'account:signin' %}">Sign In</a></li>
+                {% endif %}
+            </ul>
+        </div>
+    </nav>
     {% if total_price|floatformat:2 != "0.00" %}
     <h1>Your Cart <i class="fa fa-shopping-cart"></i></h1>
     
@@ -52,64 +69,6 @@
 {% else %}
 <h1>Your Cart is empty <i class="fa fa-frown-o"></i></h1>
 {% endif %}
-<a href="{% url 'ecommerce:listings' %}" class="back-to-home">Back to Home</a>
-
-
-  <script>
-    function deleteCartItem(itemId) {
-        fetch('/delete_cart_item/' + itemId + '/')
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    location.reload();
-                }
-            });
-    }
-    document.addEventListener("DOMContentLoaded", function() {
-        const quantityButtons = document.querySelectorAll(".quantity-btn");
-        const clearCartButton = document.querySelector(".clear-cart-btn");
-    
-        quantityButtons.forEach(button => {
-            button.addEventListener("click", function(event) {
-                event.preventDefault();
-                const action = button.getAttribute("data-action");
-                const itemId = button.getAttribute("data-item");
-                updateQuantity(action, itemId);
-            });
-        });
-    
-        clearCartButton.addEventListener("click", function(event) {
-            event.preventDefault();
-            clearCart();
-        });
-    
-        function updateQuantity(action, itemId) {
-            fetch(`/update_quantity/${itemId}/${action}`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        window.location.reload();
-                    }
-                })
-                .catch(error => {
-                    console.error("Error updating quantity:", error);
-                });
-        }
-    
-        function clearCart() {
-            fetch("/clear_cart")
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        window.location.reload();
-                    }
-                })
-                .catch(error => {
-                    console.error("Error clearing cart:", error);
-                });
-        }
-    });
-    </script>
     
 </body>
 </html>

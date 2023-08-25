@@ -8,6 +8,22 @@
     <title>Checkout</title>
 </head>
 <body>
+    <nav class="navbar">
+        <div class="nav-content">
+            <a class="logo" href="{% url 'ecommerce:listings' %}">Sleek  Boutique</a>
+            <ul class="nav-links">
+                <li><a href="{% url 'ecommerce:listings' %}">Our Products</a></li>
+                {% if user.is_authenticated %}
+                <li><a href="{% url 'account:profile' %}">Profile</a></li>
+                <li><a href="{% url 'ecommerce:cart' %}"><i class="fa fa-shopping-cart"></i></a></li>
+                <li><a href="{% url 'account:signout' %}">Logout</a></li>
+                {% else %}
+                <li><a href="{% url 'account:signup' %}">Sign Up</a></li>
+                <li><a href="{% url 'account:signin' %}">Sign In</a></li>
+                {% endif %}
+            </ul>
+        </div>
+    </nav>
     <h1>Checkout</h1>
 
     <form method="post">
@@ -19,7 +35,8 @@
         </div>
         <div class="checkout-section">
             <h2>Contact Number</h2>
-            {{ form.contact_info }}
+            {{ form.contact_info }}<br>
+           {{form.contact_info.help_text}}
         </div>
 
         <div class="checkout-section">
@@ -30,6 +47,7 @@
             <h2>Order Summary</h2>
             <p>Total Price: <strong>{{ total_price|floatformat:2 }} {{ cart_items.0.product.currency }}</strong></p>
         </div>
+        
         <button type="submit" class="checkout-btn">Place Order</button>
     </form>
 

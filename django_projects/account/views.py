@@ -47,6 +47,7 @@ def signup(request):
 
             error_message = ', '.join(error_messages)
             messages.error(request, f'Invalid signup: {error_message}')
+
             return render(request, 'account/register.html', {'form': form})
 
 
@@ -75,7 +76,7 @@ def sign_in(request):
 @login_required
 def sign_out(request):
     logout(request)
-    return redirect('dashboard')
+    return redirect('account:dashboard')
 
 
 @login_required
@@ -91,6 +92,7 @@ def edit_profile(request):
             user_form.save()
             profile_form.save()
             messages.success(request, 'Changes saved successfully!')
+
             return redirect('profile')
     else:
         user_form = UserEditForm(instance=user)

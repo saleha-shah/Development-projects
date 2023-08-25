@@ -9,6 +9,22 @@
     <link rel="stylesheet" type="text/css" href="{% static 'css/order_confirmation.css' %}">
 </head>
 <body>
+    <nav class="navbar">
+        <div class="nav-content">
+            <a class="logo" href="{% url 'ecommerce:listings' %}">Sleek  Boutique</a>
+            <ul class="nav-links">
+                <li><a href="{% url 'ecommerce:listings' %}">Our Products</a></li>
+                {% if user.is_authenticated %}
+                <li><a href="{% url 'account:profile' %}">Profile</a></li>
+                <li><a href="{% url 'ecommerce:cart' %}"><i class="fa fa-shopping-cart"></i></a></li>
+                <li><a href="{% url 'account:signout' %}">Logout</a></li>
+                {% else %}
+                <li><a href="{% url 'account:signup' %}">Sign Up</a></li>
+                <li><a href="{% url 'account:signin' %}">Sign In</a></li>
+                {% endif %}
+            </ul>
+        </div>
+    </nav>
     <div class="order-confirmation">
         <div class="thank-you">
             <h1>Thank You!</h1>
@@ -25,13 +41,12 @@
             <p><strong>Payment Method:</strong> {{ order.payment_method }}</p>
             <h3>Items in Cart:</h3>
             <ul class="cart-items">
-                {% for ordered_item in order.ordereditem_set.all %}
-                <li>{{ ordered_item.cart_item.product.name }} (Size: {{ ordered_item.cart_item.size }}) - Quantity: {{ ordered_item.quantity }}</li>
+                {% for cart_item in cart_items_data %}
+                <li>{{ cart_item.product_name }} (Size: {{ cart_item.size }}) - Quantity: {{ cart_item.quantity }}</li>
                 {% endfor %}
             </ul>
         </div>
         
     </div>
-    <a href="{% url 'ecommerce:listings' %}" class="back-to-home">Back to Home</a>
 </body>
 </html>

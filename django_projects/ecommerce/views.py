@@ -8,7 +8,7 @@ from django.http import JsonResponse
 from django.utils import timezone
 
 
-from ecommerce.models import Product, CartItem, Order, OrderedItem
+from ecommerce.models import Product, CartItem, Order
 from ecommerce.forms import CheckoutForm
 
 
@@ -132,12 +132,12 @@ def checkout(request):
         form = CheckoutForm(request.POST)
         order_date = timezone.now()
         expected_delivery_date = order_date + timedelta(days=5)
-        user_email = request.user.email
+
         if form.is_valid():
             payment_method = form.cleaned_data['payment_method']
             shipping_address = form.cleaned_data['shipping_address']
             contact_info = form.cleaned_data['contact_info']
-            
+
             order = Order.objects.create(
                 user=request.user,
                 order_date=order_date,
@@ -147,27 +147,29 @@ def checkout(request):
                 contact_info=contact_info,
                 total_price=total_price
             )
-            
-            for cart_item in cart_items:
-                OrderedItem.objects.create(
-                    order=order,
-                    cart_item=cart_item,
-                    quantity=cart_item.quantity
-                )
+            cart_items_data = [
+                {
+                    'product_name': item.product.name,
+                    'size': item.size,
+                    'quantity': item.quantity,
+                }
+                for item in cart_items
+            ]
 
             context = {
                 'order': order,
-                'cart_items': cart_items,
+                'cart_items_data': cart_items_data,
                 'total_price': total_price,
             }
+            cart_items.delete()
 
             return render(request, 'ecommerce/order_confirmation.html', context)
-    else:
-        form = CheckoutForm()
-        context = {
-            'form': form,
-            'cart_items': cart_items,
-            'total_price': total_price,
-        }
+
+    form = CheckoutForm()
+    context = {
+        'form': form,
+        'cart_items': cart_items,
+        'total_price': total_price,
+    }
 
     return render(request, 'ecommerce/checkout.html', context)

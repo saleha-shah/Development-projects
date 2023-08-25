@@ -5,10 +5,30 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" type="text/css" href="{% static 'css/product_detail.css' %}">
+    <script type="text/javascript" src="{% static 'ecommerce/product_detail.js' %}"></script>
     <title>Product Detail</title>
 </head>
 <body>
-    
+    <nav class="navbar">
+        <div class="nav-content">
+            <a class="logo" href="{% url 'ecommerce:listings' %}">Sleek  Boutique</a>
+            <ul class="nav-links">
+                <li><a href="{% url 'ecommerce:listings' %}">Our Products</a></li>
+                {% if user.is_authenticated %}
+                <li><a href="{% url 'account:profile' %}">Profile</a></li>
+                <li><a href="{% url 'ecommerce:cart' %}"><i class="fa fa-shopping-cart"></i></a></li>
+                <li><a href="{% url 'account:signout' %}">Logout</a></li>
+                {% else %}
+                <li><a href="{% url 'account:signup' %}">Sign Up</a></li>
+                <li><a href="{% url 'account:signin' %}">Sign In</a></li>
+                {% endif %}
+            </ul>
+            <form class="search-form" action="{% url 'ecommerce:search' %}" method="GET">
+                <input type="text" name="query" placeholder="Search products">
+                <button type="submit">Search</button>
+            </form>
+        </div>
+    </nav>
     <div class="product-detail">
         <h2>{{ product.name }}</h2>
         <div class="categories">{% for point in categories %}
@@ -72,24 +92,5 @@
     
     
 </body>
-
-<script>
-    document.addEventListener("DOMContentLoaded", function() {
-        const addToCartLinks = document.querySelectorAll(".add-to-cart-link");
-        const sizeOptions = document.querySelectorAll(".size-options");
-  
-        addToCartLinks.forEach((link, index) => {
-            link.addEventListener("click", function(event) {
-                event.preventDefault();
-                const selectedSize = sizeOptions[index].value;
-                if (selectedSize) {
-                    const originalHref = link.getAttribute("href");
-                    const updatedHref = originalHref.replace("default", selectedSize);
-                    window.location.href = updatedHref;
-                }
-            });
-        });
-    });
-  </script>
   
 </html>

@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" type="text/css" href="{% static 'css/product.css' %}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script type="text/javascript" src="{% static 'ecommerce/listings.js' %}"></script>
     <title>listings</title>
 </head>
 <body>
@@ -60,22 +61,5 @@
         </span>
       </div>
 </body>
-<script>
-  document.addEventListener("DOMContentLoaded", function() {
-      const addToCartLinks = document.querySelectorAll(".add-to-cart-link");
-      const sizeOptions = document.querySelectorAll(".size-options");
 
-      addToCartLinks.forEach((link, index) => {
-          link.addEventListener("click", function(event) {
-              event.preventDefault();
-              const selectedSize = sizeOptions[index].value;
-              if (selectedSize) {
-                  const originalHref = link.getAttribute("href");
-                  const updatedHref = originalHref.replace("default", selectedSize);
-                  window.location.href = updatedHref;
-              }
-          });
-      });
-  });
-</script>
 </html>
