@@ -44,9 +44,10 @@ Welcome to the Sleek Boutique Django E-Commerce project! This is a web applicati
 ## Setting Up the Project
 
 1. Clone the repository:
+```
 git clone https://gitlab.arbisoft.com/saleha.shahzad/edited-saleha-shahzad.git
 cd django_projects
-
+```
 2. Create a virtual environment and activate it:
 ```python
 python -m venv venv
