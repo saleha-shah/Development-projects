@@ -22,23 +22,19 @@ def send_signup_email(sender, instance, created, **kwargs):
         send_mail(subject, None, from_email, recipient_list, html_message=html_message)
 
 
-@receiver(post_save, sender=Order)
+@receiver(post_save, sender=OrderedItem)
 def send_order_confirmation(sender, instance, created, **kwargs):
     if created:
-        cart_items = CartItem.objects.filter(user=instance.user)
-        for cart_item in cart_items:
-            OrderedItem.objects.create(
-                order=instance,
-                cart_item=cart_item,
-                quantity=cart_item.quantity
-            )
+        selected_cart_item = instance.cart_item
+        selected_cart_items = [selected_cart_item]
+        print(selected_cart_items)
         subject = 'Sleek Boutique--Order Confirmation'
         from_email = settings.EMAIL_HOST_USER
-        recipient_list = [instance.user.email]
+        recipient_list = [instance.order.user.email]
 
         context = {
-                'order': instance,
-                'cart_items': cart_items,
+            'order': instance.order,
+            'cart_items': selected_cart_items,
         }
 
         html_message = render_to_string('email_templates/order_confirmation.html', context)

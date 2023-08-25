@@ -47,7 +47,7 @@
             <h2>Order Summary</h2>
             <p>Total Price: <strong>{{ total_price|floatformat:2 }} {{ cart_items.0.product.currency }}</strong></p>
         </div>
-        
+        <input type="hidden" name="selected_items" value="{{ selected_item_ids|join:',' }}">
         <button type="submit" class="checkout-btn">Place Order</button>
     </form>
 
