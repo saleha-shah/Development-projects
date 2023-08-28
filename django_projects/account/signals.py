@@ -5,7 +5,7 @@ from django.core.mail import send_mail
 from django.template.loader import render_to_string
 
 from account.models import ProfileInfo
-from ecommerce.models import Order, CartItem, OrderedItem
+from ecommerce.models import OrderedItem
 
 
 @receiver(post_save, sender=ProfileInfo)
@@ -27,7 +27,6 @@ def send_order_confirmation(sender, instance, created, **kwargs):
     if created:
         selected_cart_item = instance.cart_item
         selected_cart_items = [selected_cart_item]
-        print(selected_cart_items)
         subject = 'Sleek Boutique--Order Confirmation'
         from_email = settings.EMAIL_HOST_USER
         recipient_list = [instance.order.user.email]

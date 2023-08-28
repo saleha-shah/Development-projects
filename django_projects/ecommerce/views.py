@@ -123,65 +123,12 @@ def delete_cart_item(request, item_id):
     return JsonResponse({"success": True})
 
 
-# @login_required(login_url='account:signin')
-# def checkout(request):
-#     cart_items = CartItem.objects.filter(user=request.user)
-#     total_price = sum(item.product.price * item.quantity for item in cart_items)
-
-#     if request.method == 'POST':
-#         form = CheckoutForm(request.POST)
-#         order_date = timezone.now()
-#         expected_delivery_date = order_date + timedelta(days=5)
-
-#         if form.is_valid():
-#             selected_item_ids = form.cleaned_data['selected_items'].split(',')
-#             selected_cart_items = CartItem.objects.filter(id__in=selected_item_ids)
-#             payment_method = form.cleaned_data['payment_method']
-#             shipping_address = form.cleaned_data['shipping_address']
-#             contact_info = form.cleaned_data['contact_info']
-
-#             order = Order.objects.create(
-#                 user=request.user,
-#                 order_date=order_date,
-#                 expected_delivery_date=expected_delivery_date,
-#                 payment_method=payment_method,
-#                 shipping_address=shipping_address,
-#                 contact_info=contact_info,
-#                 total_price=total_price
-#             )
-#             cart_items_data = [
-#                 {
-#                     'product_name': item.product.name,
-#                     'size': item.size,
-#                     'quantity': item.quantity,
-#                 }
-#                 for item in selected_cart_items
-#             ]
-
-#             selected_cart_items.delete()
-            
-#             context = {
-#                 'order': order,
-#                 'total_price': total_price,
-#                 'cart_items_data': cart_items_data
-#             }
-
-#             return render(request, 'ecommerce/order_confirmation.html', context)
-
-#     form = CheckoutForm()
-#     context = {
-#         'form': form,
-#         'cart_items': cart_items,
-#         'total_price': total_price,
-#     }
-
-#     return render(request, 'ecommerce/checkout.html', context)
-
 @login_required(login_url='account:signin')
 def checkout(request):
     cart_items = CartItem.objects.filter(user=request.user)
-    selected_item_ids = request.GET.getlist('selected_items')
-    selected_cart_items = cart_items.filter(id__in=selected_item_ids)
+    selected_item_ids = request.GET.get('selected_items')
+    selected_item_ids_list = [int(item_id) for item_id in selected_item_ids.split(',')]
+    selected_cart_items = cart_items.filter(id__in=selected_item_ids_list)
     total_price = sum(item.product.price * item.quantity for item in selected_cart_items)
 
     if request.method == 'POST':
