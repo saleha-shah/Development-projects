@@ -57,10 +57,9 @@
         <p><strong>Payment Method:</strong> {{ order.payment_method }}</p>
         <h3>Items in Cart:</h3>
         <ul class="cart-items">
-            {% for cart_item in cart_items %}
-            <li>{{ cart_item.product.name }} (Size: {{ cart_item.size }}) - Quantity: {{ cart_item.quantity }}</li>
+            {% for cart_item in cart_items_data %}
+            <li>{{ cart_item.product_name }} (Size: {{ cart_item.size }}) - Quantity: {{ cart_item.quantity }}</li>
             {% endfor %}
-        </ul>
     </div>
 
     <p>Thank you for choosing us! We look forward to serving you again.</p>

@@ -6,6 +6,8 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.http import JsonResponse
 from django.utils import timezone
+from django.db import transaction
+from django.db.models.signals import post_save
 
 
 from ecommerce.models import Product, CartItem, Order, OrderedItem
@@ -76,6 +78,7 @@ def cart(request):
         'cart_items': cart_items,
         'total_price': total_price,
     }
+
     return render(request, 'ecommerce/cart.html', context)
 
 
@@ -141,39 +144,45 @@ def checkout(request):
             shipping_address = form.cleaned_data['shipping_address']
             contact_info = form.cleaned_data['contact_info']
 
-            order = Order.objects.create(
-                user=request.user,
-                order_date=order_date,
-                expected_delivery_date=expected_delivery_date,
-                payment_method=payment_method,
-                shipping_address=shipping_address,
-                contact_info=contact_info,
-                total_price=total_price
-            )
-            for cart_item in selected_cart_items:
-                OrderedItem.objects.create(
-                    order=order,
-                    cart_item=cart_item,
-                    quantity=cart_item.quantity
+            with transaction.atomic():
+                order = Order.objects.create(
+                    user=request.user,
+                    order_date=order_date,
+                    expected_delivery_date=expected_delivery_date,
+                    payment_method=payment_method,
+                    shipping_address=shipping_address,
+                    contact_info=contact_info,
+                    total_price=total_price
                 )
-            cart_items_data = [
-                {
-                    'product_name': item.product.name,
-                    'size': item.size,
-                    'quantity': item.quantity,
+
+                ordered_items = [
+                    OrderedItem(
+                        order=order,
+                        cart_item=cart_item,
+                        quantity=cart_item.quantity
+                    )
+                    for cart_item in selected_cart_items
+                ]
+
+                OrderedItem.objects.bulk_create(ordered_items)
+                post_save.send(sender=OrderedItem, instance=ordered_items[-1], created=True)
+
+                cart_items_data = [
+                    {
+                        'product_name': item.product.name,
+                        'size': item.size,
+                        'quantity': item.quantity,
+                    }
+                    for item in selected_cart_items
+                ]
+
+                context = {
+                    'order': order,
+                    'total_price': total_price,
+                    'cart_items_data': cart_items_data
                 }
-                for item in selected_cart_items
-            ]
 
-            selected_cart_items.delete()
-
-            context = {
-                'order': order,
-                'total_price': total_price,
-                'cart_items_data': cart_items_data
-            }
-
-            return render(request, 'ecommerce/order_confirmation.html', context)
+                return render(request, 'ecommerce/order_confirmation.html', context)
 
     form = CheckoutForm()
     context = {

@@ -25,16 +25,28 @@ def send_signup_email(sender, instance, created, **kwargs):
 @receiver(post_save, sender=OrderedItem)
 def send_order_confirmation(sender, instance, created, **kwargs):
     if created:
-        selected_cart_item = instance.cart_item
-        selected_cart_items = [selected_cart_item]
+        target_order_id = instance.order.order_id
+        ordered_items = OrderedItem.objects.filter(order__order_id=target_order_id)
+
+        cart_items_data = []
+        for item in ordered_items:
+            cart_items_data.append(
+                {
+                    'product_name': item.cart_item.product.name,
+                    'size': item.cart_item.size,
+                    'quantity': item.cart_item.quantity,
+                }
+            )
+            item.cart_item.delete()
+
         subject = 'Sleek Boutique--Order Confirmation'
         from_email = settings.EMAIL_HOST_USER
         recipient_list = [instance.order.user.email]
 
         context = {
-            'order': instance.order,
-            'cart_items': selected_cart_items,
-        }
+                'order': instance.order,
+                'cart_items_data': cart_items_data
+            }
 
         html_message = render_to_string('email_templates/order_confirmation.html', context)
         message = 'Thank you for placing an order with us!'
