@@ -95,8 +95,8 @@ class Order(models.Model):
 
 class OrderedItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='order')
-    cart_item = models.ForeignKey(CartItem, on_delete=models.CASCADE, related_name='cart_item')
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField()
 
     def __str__(self):
-        return f"{self.cart_item.product.name} - {self.quantity}"
+        return f"{self.product.name} - {self.quantity}"

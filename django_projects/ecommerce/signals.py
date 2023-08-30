@@ -14,24 +14,27 @@ def send_order_confirmation(sender, instance, created, **kwargs):
         ordered_items = OrderedItem.objects.filter(order__order_id=target_order_id)
 
         cart_items_data = []
+        total_price = 0
+
         for item in ordered_items:
             cart_items_data.append(
                 {
-                    'product_name': item.cart_item.product.name,
-                    'size': item.cart_item.size,
-                    'quantity': item.cart_item.quantity,
+                    'product_name': item.product.name,
+                    'quantity': item.quantity,
                 }
             )
-            item.cart_item.delete()
+            total_price += item.product.price * item.quantity
+            item.delete()
 
-        subject = 'Sleek Boutique--Order Confirmation'
+        subject = 'Sleek Boutique -- Order Confirmation'
         from_email = settings.EMAIL_HOST_USER
         recipient_list = [instance.order.user.email]
 
         context = {
-                'order': instance.order,
-                'cart_items_data': cart_items_data
-            }
+            'order': instance.order,
+            'total_price': total_price,
+            'cart_items_data': cart_items_data
+        }
 
         html_message = render_to_string('email_templates/order_confirmation.html', context)
         message = 'Thank you for placing an order with us!'

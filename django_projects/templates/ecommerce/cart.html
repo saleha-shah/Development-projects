@@ -1,4 +1,5 @@
 {% load static %}
+{% load product_tags %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -29,47 +30,52 @@
     {% if total_price|floatformat:2 != "0.00" %}
     <h1>Your Cart <i class="fa fa-shopping-cart"></i></h1>
     
-  <table class="cart-table">
-    <tr>
-        <th></th>
-        <th>Product</th>
-        <th>Size</th>
-        <th>Quantity</th>
-        <th>Price</th>
-        <th>Action</th>
-    </tr>
-    {% for cart_item in cart_items %}
-    <tr>
-        <td><input type="checkbox" name="selected_items" value="{{ cart_item.id }}"></td>
-        <td>{{ cart_item.product.name }}</td>
-        <td>{{ cart_item.size }}</td>
-        <td>
-            <button class="quantity-btn" data-action="decrease" data-item="{{ cart_item.id }}">-</button>
-            {{ cart_item.quantity }}
-            <button class="quantity-btn" data-action="increase" data-item="{{ cart_item.id }}">+</button>
-        </td>
-        <td>{{ cart_item.product.price|floatformat:2 }} {{ cart_item.product.currency }}</td>
-        <td>
-            <a href="javascript:void(0);" onclick="deleteCartItem({{ cart_item.id }})">
-                <i class="fa fa-trash"></i>
-            </a>
-        </td>
-    </tr>
-    {% endfor %}
-    <tr>
-        <td colspan="4"><strong>Total</strong></td>
-        <td><strong>{{ total_price|floatformat:2 }} {{ cart_items.0.product.currency }}</strong></td>
-    </tr>
-  </table>
-  <div class="cart-actions">
-    <a href="{% url 'ecommerce:checkout' %}" class="checkout-btn">Checkout</a>
-    <a href="{% url 'ecommerce:clear_cart' %}" class="clear-cart-btn">Clear Cart</a>
-    
-
-</div>
-{% else %}
-<h1>Your Cart is empty <i class="fa fa-frown-o"></i></h1>
-{% endif %}
+    <table class="cart-table">
+        <tr>
+            <th></th>
+            <th>Product</th>
+            <th>Size</th>
+            <th>Quantity</th>
+            <th>Price</th>
+            <th>Action</th>
+        </tr>
+        {% for cart_item_id, cart_item in cart_items_data.items %}
+<tr>
+    <td><input type="checkbox" name="selected_items" value="{{ cart_item_id }}"></td>
+    <td>{% with product=cart_item.retailer_sku|get_product %}
+        {{ product.name}}
+        {% endwith %}
+    </td>
+    <td>{{ cart_item.size }}</td>
+    <td>
+        <button class="quantity-btn" data-action="decrease" data-item="{{ cart_item_id }}">-</button>
+        {{ cart_item.quantity }}
+        <button class="quantity-btn" data-action="increase" data-item="{{ cart_item_id }}">+</button>
+    </td>
+    <td>
+        {% with product=cart_item.retailer_sku|get_product %}
+        {{ product.price|floatformat:2 }} {{ product.currency }}
+        {% endwith %}
+    </td>
+    <td>
+        <a href="javascript:void(0);" onclick="deleteCartItem({{ cart_item_id }})">
+            <i class="fa fa-trash"></i>
+        </a>
+    </td>
+</tr>
+{% endfor %}
+        <tr>
+            <td colspan="4"><strong>Total</strong></td>
+            <td><strong>{{ total_price|floatformat:2 }} {{ cart_items_data.0.product.currency }}</strong></td>
+        </tr>
+    </table>
+    <div class="cart-actions">
+        <a href="{% url 'ecommerce:checkout' %}" class="checkout-btn">Checkout</a>
+        <a href="{% url 'ecommerce:clear_cart' %}" class="clear-cart-btn">Clear Cart</a>
+    </div>
+    {% else %}
+    <h1>Your Cart is empty <i class="fa fa-frown-o"></i></h1>
+    {% endif %}
     
 </body>
 </html>

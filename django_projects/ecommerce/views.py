@@ -10,7 +10,7 @@ from django.db import transaction
 from django.db.models.signals import post_save
 
 
-from ecommerce.models import Product, CartItem, Order, OrderedItem
+from ecommerce.models import Product, Order, OrderedItem
 from ecommerce.forms import CheckoutForm
 
 
@@ -58,24 +58,34 @@ def product_detail(request, product_id):
 def add_to_cart(request, product_id, size):
     product = Product.objects.get(retailer_sku=product_id)
 
-    cart_item, created = CartItem.objects.get_or_create(
-        user=request.user,
-        product=product,
-        size=size)
+    if 'cart_items' not in request.session:
+        request.session['cart_items'] = {}
 
-    if not created:
-        cart_item.quantity += 1
-        cart_item.save()
+    cart_items = request.session['cart_items']
+
+    if product.retailer_sku in cart_items:
+        cart_items[product.retailer_sku]['quantity'] += 1
+    else:
+        cart_items[product.retailer_sku] = {
+            'retailer_sku': product.retailer_sku,
+            'size': size,
+            'quantity': 1
+        }
+
+    request.session.modified = True
 
     return redirect('ecommerce:cart')
 
 
 @login_required(login_url='account:signin')
 def cart(request):
-    cart_items = CartItem.objects.filter(user=request.user)
-    total_price = sum(item.product.price * item.quantity for item in cart_items)
+    cart_items_data = request.session.get('cart_items', {})
+    total_price = sum(
+        Product.objects.get(retailer_sku=item['retailer_sku']).price * item['quantity']
+        for item in cart_items_data.values()
+    )
     context = {
-        'cart_items': cart_items,
+        'cart_items_data': cart_items_data,
         'total_price': total_price,
     }
 
@@ -100,39 +110,48 @@ def search(request):
 
 @login_required(login_url='account:signin')
 def update_quantity(request, item_id, action):
-    cart_item = CartItem.objects.get(id=item_id)
-    if action == "increase":
-        cart_item.quantity += 1
-    elif action == "decrease" and cart_item.quantity > 1:
-        cart_item.quantity -= 1
-    cart_item.save()
+    cart_items_data = request.session.get('cart_items', {})
+
+    if str(item_id) in cart_items_data:
+        if action == "increase":
+            cart_items_data[str(item_id)]['quantity'] += 1
+        elif action == "decrease" and cart_items_data[str(item_id)]['quantity'] > 1:
+            cart_items_data[str(item_id)]['quantity'] -= 1
+        request.session.modified = True
 
     return JsonResponse({"success": True})
 
 
 @login_required(login_url='account:signin')
 def clear_cart(request):
-    cart_items = CartItem.objects.filter(user=request.user)
-    cart_items.delete()
+    if 'cart_items' in request.session:
+        del request.session['cart_items']
+        request.session.modified = True
 
     return JsonResponse({"success": True})
 
 
 @login_required(login_url='account:signin')
 def delete_cart_item(request, item_id):
-    cart_item = CartItem.objects.filter(user=request.user, id=item_id)
-    cart_item.delete()
+    cart_items_data = request.session.get('cart_items', {})
+
+    if str(item_id) in cart_items_data:
+        del cart_items_data[str(item_id)]
+        request.session.modified = True
 
     return JsonResponse({"success": True})
 
 
 @login_required(login_url='account:signin')
 def checkout(request):
-    cart_items = CartItem.objects.filter(user=request.user)
+    cart_items_data = request.session.get('cart_items', {})
     selected_item_ids = request.GET.get('selected_items')
     selected_item_ids_list = [int(item_id) for item_id in selected_item_ids.split(',')]
-    selected_cart_items = cart_items.filter(id__in=selected_item_ids_list)
-    total_price = sum(item.product.price * item.quantity for item in selected_cart_items)
+    selected_cart_items = [cart_items_data[str(item_id)] for item_id in selected_item_ids_list]
+    total_price = sum(
+        Product.objects.get(retailer_sku=item['retailer_sku']).price * item['quantity']
+        for item in selected_cart_items
+    )
 
     if request.method == 'POST':
         form = CheckoutForm(request.POST)
@@ -158,8 +177,8 @@ def checkout(request):
                 ordered_items = [
                     OrderedItem(
                         order=order,
-                        cart_item=cart_item,
-                        quantity=cart_item.quantity
+                        product=Product.objects.get(retailer_sku=cart_item['retailer_sku']),
+                        quantity=cart_item['quantity']
                     )
                     for cart_item in selected_cart_items
                 ]
@@ -169,9 +188,9 @@ def checkout(request):
 
                 cart_items_data = [
                     {
-                        'product_name': item.product.name,
-                        'size': item.size,
-                        'quantity': item.quantity,
+                        'product_name': Product.objects.get(retailer_sku=item['retailer_sku']).name,
+                        'size': item['size'],
+                        'quantity': item['quantity'],
                     }
                     for item in selected_cart_items
                 ]
@@ -179,7 +198,8 @@ def checkout(request):
                 context = {
                     'order': order,
                     'total_price': total_price,
-                    'cart_items_data': cart_items_data
+                    'cart_items_data': cart_items_data,
+                    'total_price': total_price
                 }
 
                 return render(request, 'ecommerce/order_confirmation.html', context)

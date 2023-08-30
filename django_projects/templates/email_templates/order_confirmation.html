@@ -58,10 +58,11 @@
         <h3>Items in Cart:</h3>
         <ul class="cart-items">
             {% for cart_item in cart_items_data %}
-            <li>{{ cart_item.product_name }} (Size: {{ cart_item.size }}) - Quantity: {{ cart_item.quantity }}</li>
+            <li>{{ cart_item.product_name }} - Quantity: {{ cart_item.quantity }}</li>
             {% endfor %}
+        </ul>
+        <p><strong>Total Price:</strong> {{ total_price }}</p>
     </div>
-
     <p>Thank you for choosing us! We look forward to serving you again.</p>
     <p class="signature">Sincerely,<br>Sleek Boutique Team</p>
 </body>
